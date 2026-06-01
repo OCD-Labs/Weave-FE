@@ -42,7 +42,7 @@ export function TradePanel({ basket }: { basket: Basket }) {
       toast("Enter an amount", "error");
       return;
     }
-    if (isDep) toast(`Depositing ${fmtUsd(num)} → approving USDC…`, "pending");
+    if (isDep) toast(`Depositing ${fmtUsd(num)} → approving USDG…`, "pending");
     else toast(`Redeeming ${fmtNum(num, 2)} ${basket.symbol}…`, "pending");
     setTimeout(() => toast("Transaction confirmed", "success"), 1400);
     setAmt("");
@@ -99,7 +99,7 @@ export function TradePanel({ basket }: { basket: Basket }) {
             value={amt}
             onChange={(e) => setAmt(e.target.value.replace(/[^0-9.]/g, ""))}
             inputMode="decimal"
-            aria-label={isDep ? "USDC amount to deposit" : "Basket tokens to redeem"}
+            aria-label={isDep ? "USDG amount to deposit" : "Basket tokens to redeem"}
           />
           <div
             style={{
@@ -122,7 +122,7 @@ export function TradePanel({ basket }: { basket: Basket }) {
               </button>
             )}
             <span className="tag" style={{ height: 28 }}>
-              {isDep ? "USDC" : basket.symbol}
+              {isDep ? "USDG" : basket.symbol}
             </span>
           </div>
         </div>
@@ -172,7 +172,7 @@ export function TradePanel({ basket }: { basket: Basket }) {
             {est ? fmtNum(est, 2) : "0.00"}
           </span>
           <span className="tag" style={{ height: 28 }}>
-            {isDep ? basket.symbol : "USDC"}
+            {isDep ? basket.symbol : "USDG"}
           </span>
         </div>
 
@@ -190,15 +190,15 @@ export function TradePanel({ basket }: { basket: Basket }) {
           disabled={isDep && basket.suspended}
           onClick={submit}
         >
-          {!connected ? "Connect wallet" : isDep ? "Deposit USDC" : `Redeem ${basket.symbol}`}
+          {!connected ? "Connect wallet" : isDep ? "Deposit USDG" : `Redeem ${basket.symbol}`}
         </button>
         <p
           className="muted"
           style={{ fontSize: 11.5, textAlign: "center", marginTop: 10, lineHeight: 1.5 }}
         >
           {isDep
-            ? "Two steps: approve USDC, then deposit. Priced by Chainlink at execution."
-            : "Burns your basket tokens and returns USDC at current NAV."}
+            ? "Two steps: approve USDG, then deposit. Priced by Chainlink at execution."
+            : "Burns your basket tokens and returns USDG at current NAV."}
         </p>
       </div>
     </div>
