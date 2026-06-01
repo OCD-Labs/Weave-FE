@@ -3,42 +3,90 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useBaskets } from "@/lib/api/hooks";
-import { mapBasketSummary } from "@/lib/api/map";
+import { mapBasketSummary, type UiBasketSummary } from "@/lib/api/map";
+import { BASKETS } from "@/lib/data";
+import type { Basket } from "@/lib/types";
+import { useDataSource } from "@/lib/dataSource";
 import { fmtUsdCompact } from "@/lib/format";
 import { SpinIcon, SearchIcon } from "../icons";
 import { Stat } from "../Stat";
 import { Segmented, Select } from "../controls";
 import { LiveBasketCard } from "./LiveBasketCard";
+import { BasketCard } from "./BasketCard";
 import { EmptyState } from "./EmptyState";
 
 type Rebal = "all" | "auto" | "static";
 type Sort = "aum" | "new";
 
+/** Map a full mock Basket into the lean live-summary shape so it can render
+   through LiveBasketCard for an apples-to-apples comparison. */
+function mockToSummary(b: Basket): UiBasketSummary {
+  return {
+    address: b.address,
+    slug: b.slug,
+    creatorToken: b.address,
+    creator: b.creator,
+    name: b.name,
+    symbol: b.symbol,
+    thesis: b.thesis,
+    rebalancing: b.rebalancing,
+    driftThresholdBps: b.driftBps ?? 0,
+    createdAt: b.createdAt,
+    suspended: b.suspended ?? false,
+    nav: b.nav,
+    aum: b.aum,
+  };
+}
+
 export function Marketplace() {
-  const { data, isLoading, isError, error, refetch } = useBaskets();
+  const dataSource = useDataSource();
+  const isMock = dataSource === "mock";
+
+  const { data, isLoading: liveLoading, isError, error, refetch } = useBaskets();
   const [rebal, setRebal] = useState<Rebal>("all");
   const [sort, setSort] = useState<Sort>("aum");
   const [q, setQ] = useState("");
 
-  const baskets = useMemo(() => (data ?? []).map(mapBasketSummary), [data]);
-  const totalAum = useMemo(() => baskets.reduce((s, b) => s + b.aum, 0), [baskets]);
+  // In mock mode, keep the full Basket objects too so we can also render the
+  // original BasketCard side-by-side with LiveBasketCard.
+  const mockBaskets = useMemo<Basket[]>(() => (isMock ? BASKETS : []), [isMock]);
+  const summaries = useMemo(
+    () => (isMock ? mockBaskets.map(mockToSummary) : (data ?? []).map(mapBasketSummary)),
+    [isMock, mockBaskets, data]
+  );
+  const isLoading = isMock ? false : liveLoading;
+  const totalAum = useMemo(() => summaries.reduce((s, b) => s + b.aum, 0), [summaries]);
 
-  const list = useMemo(() => {
+  const filterFn = (b: UiBasketSummary) => {
     const query = q.trim().toLowerCase();
-    const filtered = baskets.filter((b) => {
-      if (rebal === "auto" && !b.rebalancing) return false;
-      if (rebal === "static" && b.rebalancing) return false;
-      if (
-        query &&
-        !(b.name.toLowerCase().includes(query) || b.thesis.toLowerCase().includes(query))
-      )
-        return false;
-      return true;
-    });
-    return [...filtered].sort((a, b) =>
-      sort === "aum" ? b.aum - a.aum : b.createdAt - a.createdAt
-    );
-  }, [baskets, rebal, sort, q]);
+    if (rebal === "auto" && !b.rebalancing) return false;
+    if (rebal === "static" && b.rebalancing) return false;
+    if (query && !(b.name.toLowerCase().includes(query) || b.thesis.toLowerCase().includes(query)))
+      return false;
+    return true;
+  };
+  const sortFn = (a: UiBasketSummary, b: UiBasketSummary) =>
+    sort === "aum" ? b.aum - a.aum : b.createdAt - a.createdAt;
+
+  const list = useMemo(
+    () => summaries.filter(filterFn).sort(sortFn),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [summaries, rebal, sort, q]
+  );
+
+  // Mock full-Basket list filtered the same way (for the comparison row).
+  const mockList = useMemo(
+    () =>
+      mockBaskets.filter((b) => {
+        const query = q.trim().toLowerCase();
+        if (rebal === "auto" && !b.rebalancing) return false;
+        if (rebal === "static" && b.rebalancing) return false;
+        if (query && !(b.name.toLowerCase().includes(query) || b.thesis.toLowerCase().includes(query)))
+          return false;
+        return true;
+      }),
+    [mockBaskets, rebal, q]
+  );
 
   return (
     <div className="reveal">
@@ -75,7 +123,7 @@ export function Marketplace() {
           </div>
           <div className="grid grid-cols-2 gap-3.5" style={{ minWidth: 280 }}>
             <Stat label="Total value woven" value={fmtUsdCompact(totalAum)} />
-            <Stat label="Live baskets" value={baskets.length} />
+            <Stat label="Live baskets" value={summaries.length} />
             <Stat label="Protocol fee" value="0.50%" sub="80% to creators" />
             <Stat label="Rebalancing" value="Onchain" sub="via Chainlink" />
           </div>
@@ -142,7 +190,44 @@ export function Marketplace() {
 
       {/* Grid */}
       <div className="wrap-wide" style={{ paddingBottom: 64 }}>
-        {isLoading ? (
+        {isMock ? (
+          /* Dev comparison view: original mock BasketCard vs new LiveBasketCard */
+          <div className="mt-2">
+            <div
+              className="card"
+              style={{
+                background: "var(--accent-tint)",
+                border: "none",
+                padding: "10px 14px",
+                marginBottom: 16,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--accent-strong)",
+              }}
+            >
+              Mock data · comparing the original design card (full mock data) with the live card
+              (lean API shape). Toggle back to “Live” in the bottom-left switch.
+            </div>
+
+            <div className="eyebrow" style={{ marginBottom: 10 }}>
+              Original BasketCard — full mock data (24h, sparkline, constituents)
+            </div>
+            <div className="grid grid-cols-1 gap-[var(--gap)] sm:grid-cols-2 xl:grid-cols-3">
+              {mockList.map((b) => (
+                <BasketCard key={`mock-${b.address}`} basket={b} />
+              ))}
+            </div>
+
+            <div className="eyebrow" style={{ margin: "28px 0 10px" }}>
+              LiveBasketCard — lean API shape (NAV, AUM, creator, rebalancing)
+            </div>
+            <div className="grid grid-cols-1 gap-[var(--gap)] sm:grid-cols-2 xl:grid-cols-3">
+              {list.map((b) => (
+                <LiveBasketCard key={`live-${b.address}`} basket={b} />
+              ))}
+            </div>
+          </div>
+        ) : isLoading ? (
           <div className="mt-2 grid grid-cols-1 gap-[var(--gap)] sm:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="card" style={{ height: 200, padding: 20 }}>

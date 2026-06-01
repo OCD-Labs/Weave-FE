@@ -362,7 +362,7 @@ export function BasketDetail({ basket }: { basket: Basket }) {
                   <thead>
                     <tr>
                       <th>Investor</th>
-                      <th style={{ textAlign: "right" }}>USDC</th>
+                      <th style={{ textAlign: "right" }}>USDG</th>
                       <th style={{ textAlign: "right" }}>Tokens minted</th>
                       <th style={{ textAlign: "right" }}>When</th>
                       <th></th>

@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import type { Address } from "viem";
 import { fmtUsd } from "@/lib/format";
 import { useComposeBasket } from "@/lib/api/hooks";
 import { mapComposeResponse, type UiCatalogueAsset } from "@/lib/api/map";
-import { ApiRequestError } from "@/lib/api/client";
+import { toUnits } from "@/lib/units";
+import { useRegistryParams } from "@/lib/web3/hooks";
+import { useCreateBasket } from "@/lib/web3/useCreateBasket";
 import { useToast } from "../toast/ToastProvider";
 import { useWallet } from "../wallet/WalletProvider";
 import { SectorPill } from "../badges";
@@ -15,6 +19,7 @@ import { Stepper } from "./Stepper";
 import { WizardNav } from "./WizardNav";
 import { ChoiceCard } from "./ChoiceCard";
 import { AILoading } from "./AILoading";
+import { TransactionStatus } from "./TransactionStatus";
 
 interface Row {
   /** Constituent token address — required for the real createBasket call.
@@ -30,16 +35,39 @@ interface Row {
 
 const STEPS = ["Describe", "Review", "Configure", "Deploy"];
 
+// Example theses chosen to match the live catalogue (currently US mega-cap
+// tech/consumer names: AMD, AMZN, NFLX, PLTR, TSLA), so the AI can actually
+// find ≥3 fitting constituents.
 const EXAMPLES = [
-  "European defense primes for a decade of rearmament",
-  "The nuclear renaissance — uranium to small modular reactors",
-  "AI data-center power and cooling outside the US",
+  "Megacap US technology leaders in AI, cloud, and streaming",
+  "AI and data-analytics platforms driving the next tech cycle",
+  "Consumer tech disruptors like EVs, e-commerce, and streaming",
 ];
 
+/** Translate the backend's raw AI error into something a user understands.
+   The most common failure is the model returning too few constituents for the
+   thesis (the catalogue is small), which surfaces as a schema-validation blob. */
+function friendlyAiError(raw: string): string {
+  const r = raw.toLowerCase();
+  if (r.includes("too_small") || r.includes("at least 3")) {
+    return "The AI couldn't find enough matching assets for that description. Try a broader theme (the catalogue is focused on US tech and consumer names), or select the constituents yourself.";
+  }
+  if (r.includes("timeout") || r.includes("timed out")) {
+    return "The AI took too long to respond. Please try again, or select the constituents yourself.";
+  }
+  if (r.includes("network")) {
+    return "Couldn't reach the AI composer. Check your connection and try again.";
+  }
+  return "The AI composer couldn't generate a basket from that description. Try rephrasing, or select the constituents yourself.";
+}
+
 export function CreateBasket() {
+  const router = useRouter();
   const { toast } = useToast();
   const { connected, connect } = useWallet();
   const compose = useComposeBasket();
+  const registry = useRegistryParams();
+  const { state: deployState, deploy: runDeploy, reset: resetDeploy } = useCreateBasket();
 
   const [step, setStep] = useState(1);
   const [thesis, setThesis] = useState("");
@@ -52,10 +80,27 @@ export function CreateBasket() {
   const [symbol, setSymbol] = useState("");
   const [rebal, setRebal] = useState(false);
   const [drift, setDrift] = useState(500);
-  const [seed, setSeed] = useState("1000");
+  const [seed, setSeed] = useState("");
 
   const loading = compose.isPending;
   const aiError = compose.isError;
+  const descOk = thesis.trim().length >= 20;
+  const deploying = deployState.phase !== "idle" && deployState.phase !== "error";
+
+  // On successful deploy, navigate to the new basket (or marketplace fallback).
+  useEffect(() => {
+    if (deployState.phase === "success") {
+      toast("Basket deployed — welcome to the marketplace", "success");
+      const t = setTimeout(() => {
+        router.push(
+          deployState.basketAddress
+            ? `/baskets/${deployState.basketAddress.toLowerCase()}`
+            : "/"
+        );
+      }, 900);
+      return () => clearTimeout(t);
+    }
+  }, [deployState.phase, deployState.basketAddress, router, toast]);
 
   function runAI() {
     compose.mutate(thesis, {
@@ -76,30 +121,27 @@ export function CreateBasket() {
         setStep(2);
       },
       onError: (err) => {
-        const msg =
-          err instanceof ApiRequestError
-            ? err.message
-            : "The AI composer is unavailable. Try again or compose manually.";
-        toast(msg, "error");
+        toast(friendlyAiError(err instanceof Error ? err.message : ""), "error");
       },
     });
   }
 
-  /** Skip the AI and start from an empty composition (manual fallback). */
-  function composeManually() {
+  /** Primary path: build the composition by hand, starting from an empty table. */
+  function startManual() {
     setRows([]);
     setAiMeta(null);
     compose.reset();
-    setShowCat(true);
     setStep(2);
   }
 
   const totalW = rows ? rows.reduce((s, r) => s + (r.weight || 0), 0) : 0;
   const weightsOk = totalW === 10000;
-  const countOk = !!rows && rows.length >= 3 && rows.length <= 20;
-  const boundsOk = !!rows && rows.every((r) => r.weight >= 100 && r.weight <= 5000);
+  const countOk = !!rows && rows.length >= 3 && rows.length <= registry.maxConstituents;
+  const boundsOk = !!rows && rows.every((r) => r.weight >= registry.minWeightBps && r.weight <= 5000);
   const reviewOk = weightsOk && countOk && boundsOk;
-  const configOk = name.trim().length > 0 && symbol.trim().length > 0 && parseFloat(seed) >= 1000;
+  const seedNum = parseFloat(seed) || 0;
+  const configOk =
+    name.trim().length > 0 && symbol.trim().length > 0 && seedNum >= registry.minFirstDepositUsd;
 
   function setWeight(i: number, pct: string) {
     const bpsVal = Math.round((parseFloat(pct) || 0) * 100);
@@ -146,10 +188,27 @@ export function CreateBasket() {
       connect();
       return;
     }
-    // The on-chain deploy (USDG approve → factory.createBasket → BasketCreated
-    // event → navigate) is wired in the contract-writes slice. For now this
-    // confirms the flow end-to-end up to the signature step.
-    toast("Deploy flow is being wired to the contracts — coming next.", "pending");
+    if (!rows || !reviewOk || !configOk) {
+      toast("Complete the composition and configuration first.", "error");
+      return;
+    }
+    // Guard: every constituent must carry a real on-chain address. AI-composed
+    // and catalogue-added rows do; this catches any gap before signing.
+    const missing = rows.find((r) => !r.address);
+    if (missing) {
+      toast(`${missing.sym} is missing its token address — re-add it from the catalogue.`, "error");
+      return;
+    }
+    runDeploy({
+      name: name.trim(),
+      symbol: symbol.trim(),
+      thesis: thesis.trim(),
+      constituents: rows.map((r) => r.address as Address),
+      targetWeightsBps: rows.map((r) => r.weight),
+      rebalancingEnabled: rebal,
+      driftThresholdBps: rebal ? drift : 0,
+      initialDepositRaw: toUnits(seed || "0", 6),
+    });
   }
 
   return (
@@ -159,26 +218,27 @@ export function CreateBasket() {
       {/* STEP 1 — Describe */}
       {step === 1 && (
         <div className="card card-pad" style={{ padding: 36, marginTop: 28 }}>
-          <span className="badge badge-accent" style={{ marginBottom: 14 }}>
-            <SparkleIcon /> AI composition engine
-          </span>
-          <h1 style={{ fontSize: 30, letterSpacing: "-0.03em" }}>Describe your investment thesis</h1>
+          <h1 style={{ fontSize: 30, letterSpacing: "-0.03em" }}>Describe your basket</h1>
           <p
             className="muted"
-            style={{ fontSize: 15.5, marginTop: 10, maxWidth: 620, lineHeight: 1.55 }}
+            style={{ fontSize: 15.5, marginTop: 10, maxWidth: 640, lineHeight: 1.55 }}
           >
-            Write what you believe in, in plain language. The agent reads the full Robinhood Chain
-            catalogue — sectors, market caps, and live Chainlink prices — and proposes a basket with
-            weights and a rationale for every pick.
+            Give your basket a short description of its thesis. Then build the composition yourself, or let the AI propose one from your
+            description.
           </p>
-          <div style={{ position: "relative", marginTop: 22 }}>
+
+          <label className="eyebrow" htmlFor="basket-thesis" style={{ marginTop: 24, display: "block" }}>
+            Description
+          </label>
+          <div style={{ position: "relative", marginTop: 8 }}>
             <textarea
+              id="basket-thesis"
               className="input"
               rows={5}
               value={thesis}
               maxLength={600}
               onChange={(e) => setThesis(e.target.value)}
-              placeholder="e.g. Companies building the physical infrastructure for AI — data centres, power, and semiconductor manufacturing outside the United States."
+              placeholder="e.g. Companies building the physical infrastructure for AI like data centres, power, and semiconductor manufacturing outside the United States."
             />
             <span
               className="muted num"
@@ -189,7 +249,7 @@ export function CreateBasket() {
           </div>
           <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
             <span className="muted" style={{ fontSize: 13, alignSelf: "center" }}>
-              Try:
+              Examples:
             </span>
             {EXAMPLES.map((ex) => (
               <button
@@ -203,6 +263,7 @@ export function CreateBasket() {
               </button>
             ))}
           </div>
+
           {loading ? (
             <AILoading />
           ) : aiError ? (
@@ -215,37 +276,55 @@ export function CreateBasket() {
               }}
             >
               <div className="down" style={{ fontWeight: 700, fontSize: 14 }}>
-                Composition failed
+                AI composition failed
               </div>
               <p style={{ fontSize: 13.5, marginTop: 4, lineHeight: 1.5 }}>
-                {compose.error instanceof Error
-                  ? compose.error.message
-                  : "The AI composer is temporarily unavailable."}
+                {friendlyAiError(compose.error instanceof Error ? compose.error.message : "")}
               </p>
               <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
-                <button type="button" className="btn btn-primary" onClick={runAI}>
-                  <SparkleIcon /> Retry
+                <button type="button" className="btn btn-primary" onClick={startManual}>
+                  Select constituents →
                 </button>
-                <button type="button" className="btn btn-ghost" onClick={composeManually}>
-                  Compose manually
+                <button type="button" className="btn btn-ghost" onClick={runAI}>
+                  <SparkleIcon /> Retry AI
                 </button>
               </div>
             </div>
           ) : (
-            <button
-              type="button"
-              className="btn btn-primary btn-lg"
-              style={{ marginTop: 24 }}
-              disabled={thesis.trim().length < 20}
-              onClick={runAI}
-            >
-              <SparkleIcon /> Compose with AI
-            </button>
-          )}
-          {thesis.length > 0 && thesis.trim().length < 20 && (
-            <p className="muted" style={{ fontSize: 12.5, marginTop: 8 }}>
-              At least 20 characters.
-            </p>
+            <>
+              <div style={{ display: "flex", gap: 10, marginTop: 24, flexWrap: "wrap" }}>
+                {/* Primary path: pick assets yourself */}
+                <button
+                  type="button"
+                  className="btn btn-primary btn-lg"
+                  disabled={!descOk}
+                  onClick={startManual}
+                >
+                  Select constituents →
+                </button>
+                {/* Secondary path: AI proposal */}
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-lg"
+                  disabled={!descOk}
+                  onClick={runAI}
+                >
+                  <SparkleIcon /> Compose with AI
+                </button>
+              </div>
+              <p className="muted" style={{ fontSize: 12.5, marginTop: 10, lineHeight: 1.5 }}>
+                {descOk ? (
+                  <>
+                    <strong style={{ color: "var(--ink-2)" }}>Select constituents</strong> — pick
+                    assets from the catalogue and set weights.{" "}
+                    <strong style={{ color: "var(--ink-2)" }}>Compose with AI</strong> — get a
+                    proposed composition from your description to review and edit.
+                  </>
+                ) : (
+                  "Add at least 20 characters to continue."
+                )}
+              </p>
+            </>
           )}
         </div>
       )}
@@ -266,9 +345,11 @@ export function CreateBasket() {
               }}
             >
               <div>
-                <h2 style={{ fontSize: 20 }}>Review the proposal</h2>
+                <h2 style={{ fontSize: 20 }}>{aiMeta ? "Review the proposal" : "Build your composition"}</h2>
                 <p className="muted" style={{ fontSize: 13.5, marginTop: 3 }}>
-                  Remove, add, or reweight any constituent. Weights must total 100%.
+                  {aiMeta
+                    ? "Remove, add, or reweight any constituent. Weights must total 100%."
+                    : "Add 3–20 constituents from the catalogue and set weights totalling 100%."}
                 </p>
               </div>
               <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -289,13 +370,30 @@ export function CreateBasket() {
                 <thead>
                   <tr>
                     <th>Asset</th>
-                    <th>AI rationale</th>
+                    <th>{aiMeta ? "AI rationale" : "Rationale"}</th>
                     <th style={{ textAlign: "right" }}>Price</th>
                     <th style={{ textAlign: "right", width: 130 }}>Weight</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
+                  {rows.length === 0 && (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: "center", padding: "32px 16px" }}>
+                        <p className="muted" style={{ fontSize: 14, marginBottom: 12 }}>
+                          No constituents yet. Add tokenized equities from the catalogue to build
+                          your basket.
+                        </p>
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-sm"
+                          onClick={() => setShowCat(true)}
+                        >
+                          + Add your first constituent
+                        </button>
+                      </td>
+                    </tr>
+                  )}
                   {rows.map((r, i) => (
                     <tr key={r.sym}>
                       <td style={{ verticalAlign: "top" }}>
@@ -483,7 +581,7 @@ export function CreateBasket() {
                 htmlFor="basket-seed"
                 style={{ marginTop: 18, display: "block" }}
               >
-                Initial deposit (USDC)
+                Initial deposit (USDG)
               </label>
               <div style={{ position: "relative", marginTop: 8 }}>
                 <input
@@ -492,17 +590,19 @@ export function CreateBasket() {
                   style={{ paddingRight: 60, fontWeight: 600 }}
                   value={seed}
                   inputMode="decimal"
+                  placeholder={String(registry.minFirstDepositUsd)}
                   onChange={(e) => setSeed(e.target.value.replace(/[^0-9.]/g, ""))}
                 />
                 <span
                   className="tag"
                   style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)" }}
                 >
-                  USDC
+                  USDG
                 </span>
               </div>
               <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
-                Minimum $1,000. You seed the basket from your own wallet at deployment.
+                Minimum {fmtUsd(registry.minFirstDepositUsd)}. You seed the basket from your own
+                wallet at deployment.
               </p>
             </div>
 
@@ -559,9 +659,11 @@ export function CreateBasket() {
                   Creator revenue
                 </div>
                 <p style={{ fontSize: 13, lineHeight: 1.55, marginTop: 5 }}>
-                  A 0.50% fee is charged on each deposit and redemption.{" "}
-                  <strong>80% flows to you</strong> as the creator — continuously, for the life of
-                  the basket — and 20% to the protocol treasury.
+                  A {(registry.managementFeeBps / 100).toFixed(2)}% fee is charged on each deposit
+                  and redemption.{" "}
+                  <strong>{(registry.creatorShareBps / 100).toFixed(0)}% flows to you</strong> as the
+                  creator — continuously, for the life of the basket — and{" "}
+                  {(registry.protocolShareBps / 100).toFixed(0)}% to the protocol treasury.
                 </p>
               </div>
             </div>
@@ -581,7 +683,7 @@ export function CreateBasket() {
           <div className="card card-pad" style={{ padding: 30 }}>
             <h2 style={{ fontSize: 22 }}>Review &amp; deploy</h2>
             <p className="muted" style={{ fontSize: 14, marginTop: 4 }}>
-              Confirm everything below. Deployment is two transactions: USDC approval, then basket
+              Confirm everything below. Deployment is two transactions: USDG approval, then basket
               creation.
             </p>
             <div className="mt-[22px] grid grid-cols-1 gap-x-[14px] sm:grid-cols-2">
@@ -592,8 +694,18 @@ export function CreateBasket() {
                 k="Rebalancing"
                 v={rebal ? `Auto · ${(drift / 100).toFixed(0)}% drift` : "Static"}
               />
-              <SummaryRow k="Initial deposit" v={fmtUsd(parseFloat(seed) || 0)} mono />
-              <SummaryRow k="Fee on first deposit" v={fmtUsd((parseFloat(seed) || 0) * 0.005)} mono />
+              <SummaryRow k="Initial deposit" v={fmtUsd(seedNum)} mono />
+              <SummaryRow
+                k="Fee on first deposit"
+                v={fmtUsd(seedNum * (registry.managementFeeBps / 10000))}
+                mono
+              />
+            </div>
+            <div style={{ marginTop: 18 }}>
+              <div className="eyebrow" style={{ marginBottom: 6 }}>
+                Description
+              </div>
+              <p style={{ fontSize: 14, lineHeight: 1.6, color: "var(--ink-2)" }}>{thesis}</p>
             </div>
             <div style={{ marginTop: 18 }}>
               <div className="eyebrow" style={{ marginBottom: 8 }}>
@@ -612,11 +724,28 @@ export function CreateBasket() {
               className="btn btn-primary btn-lg btn-block"
               style={{ marginTop: 26 }}
               onClick={deploy}
+              disabled={deploying}
             >
-              {connected ? "Approve & deploy basket" : "Connect wallet to deploy"}
+              {!connected
+                ? "Connect wallet to deploy"
+                : deploying
+                  ? "Deploying…"
+                  : deployState.phase === "error"
+                    ? "Retry deploy"
+                    : "Approve & deploy basket"}
             </button>
+
+            {deployState.phase !== "idle" && <TransactionStatus state={deployState} />}
           </div>
-          <WizardNav onBack={() => setStep(3)} hideNext />
+          {!deploying && (
+            <WizardNav
+              onBack={() => {
+                resetDeploy();
+                setStep(3);
+              }}
+              hideNext
+            />
+          )}
         </div>
       )}
 

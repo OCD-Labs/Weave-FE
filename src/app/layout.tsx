@@ -5,6 +5,7 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { ToastProvider } from "@/components/toast/ToastProvider";
 import { WalletProvider } from "@/components/wallet/WalletProvider";
+import { DataSourceToggle } from "@/components/dev/DataSourceToggle";
 
 const hanken = Hanken_Grotesk({
   variable: "--font-hanken",
@@ -45,6 +46,7 @@ export default function RootLayout({
               {children}
               <Footer />
             </div>
+            <DataSourceToggle />
           </ToastProvider>
         </WalletProvider>
       </body>
