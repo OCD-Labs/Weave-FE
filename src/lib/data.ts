@@ -260,6 +260,11 @@ export function getBasketBySlug(slug: string): Basket | undefined {
   return BASKETS.find((b) => b.slug === slug);
 }
 
+/** Look up a catalogue asset by ticker symbol. */
+export function getAsset(sym: string): CatalogueAsset | undefined {
+  return CATALOGUE.find((c) => c.sym === sym);
+}
+
 /** Unique sectors across the catalogue, sorted. */
 export const SECTORS = [...new Set(CATALOGUE.map((c) => c.sector))].sort();
 
