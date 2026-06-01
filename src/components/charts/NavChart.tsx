@@ -28,7 +28,14 @@ export function NavChart({ data, range = "all", height = 280 }: NavChartProps) {
     if (!el) return;
     const ro = new ResizeObserver((entries) => {
       const cr = entries[0]?.contentRect;
-      if (cr) setW(Math.max(280, cr.width));
+      if (!cr) return;
+      // Floor to an integer and only update when it actually changed.
+      // Returning the previous value from the updater short-circuits the
+      // re-render, which is what prevents a ResizeObserver↔setState feedback
+      // loop (re-render nudges the box by a sub-pixel → observer fires again →
+      // setState → … → 100% CPU and eventual crash).
+      const next = Math.max(280, Math.floor(cr.width));
+      setW((prev) => (prev === next ? prev : next));
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -70,13 +77,15 @@ export function NavChart({ data, range = "all", height = 280 }: NavChartProps) {
     new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 
   return (
-    <div ref={wrapRef} style={{ position: "relative", width: "100%" }}>
+    // overflow:hidden + maxWidth ensures the SVG can never push the observed
+    // box wider than its container — a second guard against resize feedback.
+    <div ref={wrapRef} style={{ position: "relative", width: "100%", overflow: "hidden" }}>
       <svg
         width={w}
         height={height}
         onMouseMove={onMove}
         onMouseLeave={() => setHover(null)}
-        style={{ display: "block" }}
+        style={{ display: "block", maxWidth: "100%" }}
         aria-hidden="true"
       >
         <defs>

@@ -3,16 +3,12 @@
 import type { Basket } from "@/lib/types";
 import { bps } from "@/lib/format";
 import { useToast } from "../toast/ToastProvider";
+import { useWallet } from "../wallet/WalletProvider";
 import { SpinIcon } from "../icons";
 
-export function DriftIndicator({
-  basket,
-  connected,
-}: {
-  basket: Basket;
-  connected: boolean;
-}) {
+export function DriftIndicator({ basket }: { basket: Basket }) {
   const { toast } = useToast();
+  const { connected } = useWallet();
   const threshold = basket.driftBps ?? 0;
   const pct = threshold ? (basket.maxDriftBps / threshold) * 100 : 0;
   const needs = basket.needsRebalance;

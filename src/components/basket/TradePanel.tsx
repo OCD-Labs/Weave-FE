@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Basket } from "@/lib/types";
 import { fmtUsd, fmtNum } from "@/lib/format";
 import { useToast } from "../toast/ToastProvider";
+import { useWallet } from "../wallet/WalletProvider";
 
 type Tab = "deposit" | "redeem";
 const FEE = 0.005;
@@ -20,16 +21,9 @@ function Row({ k, v, warn }: { k: string; v: string; warn?: boolean }) {
   );
 }
 
-export function TradePanel({
-  basket,
-  connected,
-  onConnect,
-}: {
-  basket: Basket;
-  connected: boolean;
-  onConnect: () => void;
-}) {
+export function TradePanel({ basket }: { basket: Basket }) {
   const { toast } = useToast();
+  const { connected, connect } = useWallet();
   const [tab, setTab] = useState<Tab>("deposit");
   const [amt, setAmt] = useState("");
 
@@ -41,7 +35,7 @@ export function TradePanel({
   function submit() {
     if (!connected) {
       toast("Connect your wallet to continue", "error");
-      onConnect();
+      connect();
       return;
     }
     if (num <= 0) {

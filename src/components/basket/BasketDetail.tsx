@@ -39,7 +39,6 @@ export function BasketDetail({ basket }: { basket: Basket }) {
   const [range, setRange] = useState<Range>("30d");
   const [hoverSlice, setHoverSlice] = useState<number | null>(null);
   const [actTab, setActTab] = useState<ActTab>("deposits");
-  const [connected, setConnected] = useState(false);
 
   const up = basket.navChg24 >= 0;
 
@@ -177,7 +176,7 @@ export function BasketDetail({ basket }: { basket: Basket }) {
           </div>
 
           {/* Drift indicator */}
-          {basket.rebalancing && <DriftIndicator basket={basket} connected={connected} />}
+          {basket.rebalancing && <DriftIndicator basket={basket} />}
 
           {/* Composition */}
           <div className="card card-pad">
@@ -431,11 +430,7 @@ export function BasketDetail({ basket }: { basket: Basket }) {
 
         {/* RIGHT column — sticky trade panel on desktop */}
         <div className="lg:sticky lg:top-20">
-          <TradePanel
-            basket={basket}
-            connected={connected}
-            onConnect={() => setConnected(true)}
-          />
+          <TradePanel basket={basket} />
         </div>
       </div>
     </div>
