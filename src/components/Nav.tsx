@@ -10,8 +10,8 @@ import { useWallet } from "./wallet/WalletProvider";
 const LINKS = [
   { label: "Markets", href: "/" },
   { label: "Create", href: "/create" },
-  { label: "Portfolio", href: "/portfolio" },
-  { label: "Creator", href: "/creator" },
+  // { label: "Portfolio", href: "/portfolio" },
+  // { label: "Creator", href: "/creator" },
   { label: "Catalogue", href: "/catalogue" },
 ] as const;
 
@@ -28,7 +28,7 @@ export function Nav() {
     <header className="nav">
       <div className="wrap-wide nav-inner">
         <Link href="/" className="brand">
-          <BrandMark />
+          <BrandMark size={40} />
           <span className="brand-name">Weave</span>
         </Link>
 
