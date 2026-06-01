@@ -1,7 +1,9 @@
 # Not a monorepo — this file exists only so pnpm can record which native
-# dependency build-scripts are approved. `packages: []` keeps it valid on the
-# pnpm 9 that Railway uses (lockfileVersion 9), which requires the field.
-packages: []
+# dependency build-scripts are approved. `packages: ["."]` (this dir as the
+# sole package) keeps it valid on the pnpm 9 that Railway uses, which rejects
+# both a missing field AND an empty array with "packages field missing or empty".
+packages:
+  - "."
 allowBuilds:
   bufferutil: true
   keccak: true
