@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BrandMark } from "./BrandMark";
 import { WalletIcon, ChevronIcon, MenuIcon } from "./icons";
-import { WALLET } from "@/lib/data";
+import { useWallet } from "./wallet/WalletProvider";
 
 const LINKS = [
   { label: "Markets", href: "/" },
@@ -23,11 +23,6 @@ function isActive(pathname: string, href: string): boolean {
 export function Nav() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
-
-  // Close the mobile menu whenever the route changes.
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
 
   return (
     <header className="nav">
@@ -75,6 +70,7 @@ export function Nav() {
                 key={l.href}
                 href={l.href}
                 className="menu-item"
+                onClick={() => setMenuOpen(false)}
                 style={
                   isActive(pathname, l.href)
                     ? { color: "var(--accent-strong)", background: "var(--accent-tint)" }
@@ -101,7 +97,7 @@ export function Nav() {
 }
 
 function WalletButton() {
-  const [connected, setConnected] = useState(false);
+  const { connected, address, connect, disconnect } = useWallet();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -115,7 +111,7 @@ function WalletButton() {
 
   if (!connected) {
     return (
-      <button type="button" className="btn btn-primary btn-sm" onClick={() => setConnected(true)}>
+      <button type="button" className="btn btn-primary btn-sm" onClick={connect}>
         <WalletIcon /> Connect Wallet
       </button>
     );
@@ -134,7 +130,7 @@ function WalletButton() {
           }}
         />
         <span className="mono" style={{ fontSize: 13 }}>
-          {WALLET}
+          {address}
         </span>
         <ChevronIcon />
       </button>
@@ -156,7 +152,7 @@ function WalletButton() {
               Connected
             </div>
             <div className="mono" style={{ fontSize: 13, marginTop: 3 }}>
-              {WALLET}
+              {address}
             </div>
           </div>
           <hr className="divider" />
@@ -172,7 +168,7 @@ function WalletButton() {
             className="menu-item"
             style={{ color: "var(--down)", width: "100%", textAlign: "left" }}
             onClick={() => {
-              setConnected(false);
+              disconnect();
               setOpen(false);
             }}
           >
