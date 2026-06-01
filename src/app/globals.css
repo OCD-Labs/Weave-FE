@@ -644,6 +644,75 @@
       max-width: none;
     }
   }
+
+  /* ---- AI composing orb (Create step 1) ---- */
+  .ai-orb {
+    width: 30px;
+    height: 30px;
+    flex: none;
+    border-radius: 50%;
+    background: conic-gradient(
+      from 0deg,
+      var(--accent),
+      hsl(var(--accent-h) 80% 72%),
+      var(--accent)
+    );
+    animation: spin 1s linear infinite;
+    mask: radial-gradient(circle 9px at center, transparent 96%, #000 100%);
+    -webkit-mask: radial-gradient(circle 9px at center, transparent 96%, #000 100%);
+  }
+
+  /* ---- Modal (centered card; bottom sheet on mobile) ---- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(12, 20, 34, 0.42);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-panel {
+    background: var(--card);
+    border-radius: var(--r);
+    box-shadow: var(--shadow-lg);
+    width: 460px;
+    max-width: 100%;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-panel.modal-wide {
+    width: 760px;
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--line);
+    flex: none;
+  }
+  .modal-body {
+    padding: 22px;
+    overflow-y: auto;
+  }
+  @media (max-width: 640px) {
+    .modal-overlay {
+      align-items: flex-end;
+      padding: 0;
+    }
+    .modal-panel,
+    .modal-panel.modal-wide {
+      width: 100%;
+      max-width: 100%;
+      max-height: 92vh;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
 }
 
 @keyframes shimmer {

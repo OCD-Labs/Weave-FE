@@ -4,6 +4,7 @@ import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { ToastProvider } from "@/components/toast/ToastProvider";
+import { WalletProvider } from "@/components/wallet/WalletProvider";
 
 const hanken = Hanken_Grotesk({
   variable: "--font-hanken",
@@ -31,18 +32,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // Font variables go on <html> so they're in scope for Tailwind v4's
-    // preflight `font-family` (set on <html>) and every descendant — putting
-    // them on <body> leaves <html> resolving an undefined var → serif fallback.
-    <html lang="en" className={`${hanken.variable} ${plexMono.variable}`}>
+    <html
+      lang="en"
+      data-scroll-behavior="smooth"
+      className={`${hanken.variable} ${plexMono.variable}`}
+    >
       <body>
-        <ToastProvider>
-          <div className="app">
-            <Nav />
-            {children}
-            <Footer />
-          </div>
-        </ToastProvider>
+        <WalletProvider>
+          <ToastProvider>
+            <div className="app">
+              <Nav />
+              {children}
+              <Footer />
+            </div>
+          </ToastProvider>
+        </WalletProvider>
       </body>
     </html>
   );
