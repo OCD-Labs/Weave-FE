@@ -1,0 +1,682 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Weave — Design System
+   White base · teal accent (default) · Grotesk UI type ·
+   tabular mono for financial figures.
+   Ported from design_handoff_weave_app/styles.css + TAILWIND.md.
+   Accent is HSL-driven so it can be re-themed at runtime by
+   setting data-accent on <html> (blue / indigo / green).
+   ============================================================ */
+
+:root {
+  /* ---- Accent — DEFAULT = TEAL (hue 178, sat 70%) ---- */
+  --accent-h: 178;
+  --accent-s: 70%;
+  --accent: hsl(var(--accent-h) var(--accent-s) 42%);
+  --accent-strong: hsl(var(--accent-h) var(--accent-s) 36%);
+  --accent-press: hsl(var(--accent-h) var(--accent-s) 30%);
+  --accent-tint: hsl(var(--accent-h) 55% 94%);
+  --accent-tint-2: hsl(var(--accent-h) 50% 88%);
+  --accent-ring: hsl(var(--accent-h) var(--accent-s) 42% / 0.3);
+  --on-accent: #ffffff;
+
+  /* ---- Neutrals (cool grays) ---- */
+  --ink: #0c1422;
+  --ink-2: #2a3547;
+  --muted: #5b6678;
+  --muted-2: #8a93a3;
+  --line: #e7ebf2;
+  --line-2: #eef1f6;
+  --surface: #f6f8fc;
+  --surface-2: #eef2f8;
+  --card: #ffffff;
+  --bg: #fbfcfe;
+
+  /* ---- Semantic (independent of accent — never re-themed) ---- */
+  --up: #0a9d6e;
+  --up-tint: #e6f6ef;
+  --down: #e0443e;
+  --down-tint: #fdecec;
+  --warn: #d98a0b;
+  --warn-tint: #fdf3e0;
+
+  /* ---- Shape & rhythm ---- */
+  --r: 12px;
+  --r-sm: calc(var(--r) * 0.6);
+  --r-lg: calc(var(--r) * 1.4);
+  --gap: 24px;
+
+  /* ---- Type (families wired via next/font in layout.tsx) ---- */
+  --font-ui: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  --shadow-sm: 0 1px 2px rgba(16, 28, 56, 0.04), 0 1px 3px rgba(16, 28, 56, 0.06);
+  --shadow-md: 0 4px 14px rgba(16, 28, 56, 0.07), 0 2px 6px rgba(16, 28, 56, 0.05);
+  --shadow-lg: 0 18px 48px rgba(16, 28, 56, 0.14), 0 6px 16px rgba(16, 28, 56, 0.08);
+}
+
+/* Optional runtime accent themes (teal default needs no attribute). */
+[data-accent="blue"] {
+  --accent-h: 230;
+  --accent-s: 84%;
+  --accent: hsl(230 84% 56%);
+  --accent-strong: hsl(230 84% 48%);
+  --accent-press: hsl(230 84% 42%);
+  --accent-tint: hsl(230 90% 96%);
+  --accent-tint-2: hsl(230 80% 92%);
+  --accent-ring: hsl(230 84% 56% / 0.3);
+}
+[data-accent="indigo"] {
+  --accent-h: 250;
+  --accent-s: 76%;
+  --accent: hsl(250 76% 58%);
+  --accent-strong: hsl(250 76% 50%);
+  --accent-press: hsl(250 76% 44%);
+  --accent-tint: hsl(250 85% 96%);
+  --accent-tint-2: hsl(250 75% 92%);
+  --accent-ring: hsl(250 76% 58% / 0.3);
+}
+[data-accent="green"] {
+  --accent-h: 150;
+  --accent-s: 62%;
+  --accent: hsl(150 62% 42%);
+  --accent-strong: hsl(150 62% 36%);
+  --accent-press: hsl(150 62% 30%);
+  --accent-tint: hsl(150 55% 94%);
+  --accent-tint-2: hsl(150 50% 88%);
+  --accent-ring: hsl(150 62% 42% / 0.3);
+}
+
+/* Mirror tokens into Tailwind's theme so utilities (bg-surface, text-up,
+   border-line, font-mono, ring-accent, etc.) resolve to the same vars. */
+@theme inline {
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-press: var(--accent-press);
+  --color-accent-tint: var(--accent-tint);
+  --color-accent-tint-2: var(--accent-tint-2);
+  --color-on-accent: var(--on-accent);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-card: var(--card);
+  --color-bg: var(--bg);
+  --color-up: var(--up);
+  --color-up-tint: var(--up-tint);
+  --color-down: var(--down);
+  --color-down-tint: var(--down-tint);
+  --color-warn: var(--warn);
+  --color-warn-tint: var(--warn-tint);
+
+  /* Reference the underlying next/font vars directly — NOT --font-ui /
+     --font-mono, which would create a circular var and silently fall back
+     to the browser serif. */
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  --radius-sm: var(--r-sm);
+  --radius: var(--r);
+  --radius-lg: var(--r-lg);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Anchor jumps (e.g. #mkt-list) land below the 64px sticky nav. */
+    scroll-padding-top: 84px;
+  }
+
+  html,
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  [data-density="compact"] {
+    --gap: 16px;
+  }
+  [data-density="comfy"] {
+    --gap: 32px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  p {
+    margin: 0;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+  }
+  ::selection {
+    background: var(--accent-tint-2);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* ---- Type helpers ---- */
+  .mono {
+    font-family: var(--font-mono);
+    font-feature-settings: "tnum" 1;
+    letter-spacing: -0.01em;
+  }
+  .num {
+    font-family: var(--font-mono);
+    font-feature-settings: "tnum" 1;
+    letter-spacing: -0.02em;
+  }
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-2);
+  }
+  .muted {
+    color: var(--muted);
+  }
+  .up {
+    color: var(--up);
+  }
+  .down {
+    color: var(--down);
+  }
+
+  /* ---- App scaffold ---- */
+  .wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+  .wrap-wide {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+  @media (max-width: 640px) {
+    .wrap,
+    .wrap-wide {
+      padding: 0 18px;
+    }
+  }
+
+  /* ---- Top navigation ---- */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(251, 252, 254, 0.82);
+    backdrop-filter: saturate(1.4) blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 64px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 28px;
+  }
+  .brand-name {
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.03em;
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .nav-link {
+    padding: 8px 14px;
+    border-radius: 9px;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 14px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .nav-link:hover {
+    color: var(--ink);
+    background: var(--surface);
+  }
+  .nav-link.active {
+    color: var(--accent-strong);
+    background: var(--accent-tint);
+  }
+  .nav-spacer {
+    flex: 1;
+  }
+  .menu-item {
+    display: block;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .menu-item:hover {
+    background: var(--surface);
+  }
+
+  /* ---- Buttons ---- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 18px;
+    border-radius: var(--r-sm);
+    font-weight: 650;
+    font-size: 14px;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s, transform 0.05s,
+      border-color 0.15s;
+  }
+  .btn:active {
+    transform: translateY(0.5px);
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--on-accent);
+    box-shadow: 0 1px 2px var(--accent-ring);
+  }
+  .btn-primary:hover {
+    background: var(--accent-strong);
+  }
+  .btn-primary:active {
+    background: var(--accent-press);
+  }
+  .btn-ghost {
+    background: var(--card);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-ghost:hover {
+    border-color: var(--muted-2);
+  }
+  .btn-subtle {
+    background: var(--surface);
+    color: var(--ink-2);
+  }
+  .btn-subtle:hover {
+    background: var(--surface-2);
+  }
+  .btn-sm {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+  .btn-lg {
+    height: 48px;
+    padding: 0 26px;
+    font-size: 15px;
+  }
+  .btn[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .btn-block {
+    width: 100%;
+  }
+  /* touch targets: keep small buttons tappable on phones */
+  @media (max-width: 640px) {
+    .btn-sm {
+      height: 40px;
+    }
+  }
+
+  /* ---- Cards ---- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    box-shadow: var(--shadow-sm);
+  }
+  .card-pad {
+    padding: 22px;
+  }
+  /* Basket card: smooth lift on hover (plain CSS — reliable transitions). */
+  .basket-card {
+    transition: transform 0.28s cubic-bezier(0.22, 0.7, 0.25, 1),
+      box-shadow 0.28s cubic-bezier(0.22, 0.7, 0.25, 1),
+      border-color 0.28s ease;
+    will-change: transform;
+  }
+  .basket-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent-tint-2);
+  }
+  .basket-card:active {
+    transform: translateY(-1px);
+  }
+  .basket-card:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-ring);
+  }
+
+  /* ---- Badges ---- */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 24px;
+    padding: 0 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+  .badge-accent {
+    background: var(--accent-tint);
+    color: var(--accent-strong);
+  }
+  .badge-neutral {
+    background: var(--surface-2);
+    color: var(--muted);
+  }
+  .badge-up {
+    background: var(--up-tint);
+    color: var(--up);
+  }
+  .badge-down {
+    background: var(--down-tint);
+    color: var(--down);
+  }
+  .badge-warn {
+    background: var(--warn-tint);
+    color: var(--warn);
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* ---- Tag / sector ---- */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+  }
+  .sector {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 9px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---- Inputs ---- */
+  .input {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 15px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-ring);
+  }
+  textarea.input {
+    height: auto;
+    padding: 14px;
+    line-height: 1.55;
+    resize: vertical;
+  }
+  .input::placeholder {
+    color: var(--muted-2);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--line);
+    border: none;
+    margin: 0;
+  }
+
+  /* ---- Scrollbars in tables ---- */
+  .scroll-x {
+    overflow-x: auto;
+  }
+  .scroll-x::-webkit-scrollbar {
+    height: 8px;
+  }
+  .scroll-x::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 8px;
+  }
+
+  /* ---- Skeleton ---- */
+  .skel {
+    background: linear-gradient(
+      90deg,
+      var(--surface) 25%,
+      var(--line-2) 37%,
+      var(--surface) 63%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 6px;
+  }
+
+  /* ---- Fade-in (transform-only, never hides content) ---- */
+  .fade-up {
+    animation: fadeUp 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  }
+
+  /* ---- Reveal: opacity + lift, used for page sections & hero ---- */
+  .reveal {
+    animation: reveal 0.55s cubic-bezier(0.22, 0.7, 0.25, 1) both;
+  }
+
+  /* ---- Staggered children (e.g. basket grid). Each child reveals a
+     beat after the previous for a smooth cascade. Capped so long lists
+     don't feel slow. ---- */
+  .stagger > * {
+    animation: reveal 0.5s cubic-bezier(0.22, 0.7, 0.25, 1) both;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 0.02s; }
+  .stagger > *:nth-child(2) { animation-delay: 0.06s; }
+  .stagger > *:nth-child(3) { animation-delay: 0.1s; }
+  .stagger > *:nth-child(4) { animation-delay: 0.14s; }
+  .stagger > *:nth-child(5) { animation-delay: 0.18s; }
+  .stagger > *:nth-child(6) { animation-delay: 0.22s; }
+  .stagger > *:nth-child(7) { animation-delay: 0.26s; }
+  .stagger > *:nth-child(8) { animation-delay: 0.3s; }
+  .stagger > *:nth-child(n + 9) { animation-delay: 0.32s; }
+
+  /* ---- Table ---- */
+  .tbl {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .tbl th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .tbl td {
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--line-2);
+    font-size: 14px;
+    vertical-align: middle;
+  }
+  .tbl tr:last-child td {
+    border-bottom: none;
+  }
+  .tbl-hover tbody tr {
+    transition: background 0.12s;
+  }
+  .tbl-hover tbody tr:hover {
+    background: var(--surface);
+  }
+
+  /* ---- Toasts (bottom-right; full-width bottom sheet on mobile) ---- */
+  .toast-stack {
+    position: fixed;
+    bottom: 22px;
+    right: 22px;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    min-width: 280px;
+    max-width: 380px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    box-shadow: var(--shadow-lg);
+  }
+  .toast-icon {
+    width: 26px;
+    height: 26px;
+    flex: none;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 14px;
+  }
+  .toast-msg {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  @media (max-width: 640px) {
+    .toast-stack {
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+    }
+    .toast {
+      min-width: 0;
+      max-width: none;
+    }
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
