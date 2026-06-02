@@ -1,14 +1,43 @@
 "use client";
 
+import { useEffect } from "react";
 import type { Basket } from "@/lib/types";
 import { bps } from "@/lib/format";
+import { isRealAddress } from "@/lib/web3/addresses";
+import { useRebalance } from "@/lib/web3/useTrade";
 import { useToast } from "../toast/ToastProvider";
 import { useWallet } from "../wallet/WalletProvider";
 import { SpinIcon } from "../icons";
 
 export function DriftIndicator({ basket }: { basket: Basket }) {
   const { toast } = useToast();
-  const { connected } = useWallet();
+  const { connected, connect } = useWallet();
+  const live = isRealAddress(basket.address);
+  const {
+    phase: rebalPhase,
+    error: rebalError,
+    busy: rebalancing,
+    rebalance,
+  } = useRebalance((basket.address as `0x${string}`) ?? "0x0000000000000000000000000000000000000000");
+
+  useEffect(() => {
+    if (!live) return;
+    if (rebalPhase === "rebalancing") toast("Confirm the rebalance in your wallet…", "pending");
+    if (rebalPhase === "success") toast("Rebalance confirmed.", "success");
+    if (rebalPhase === "error" && rebalError) toast(rebalError, "error");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rebalPhase]);
+
+  function onRebalance() {
+    if (!connected) {
+      toast("Connect your wallet to rebalance", "error");
+      connect();
+      return;
+    }
+    if (live) rebalance();
+    else toast("Rebalance transaction submitted", "pending");
+  }
+
   const threshold = basket.driftBps ?? 0;
   const pct = threshold ? (basket.maxDriftBps / threshold) * 100 : 0;
   const needs = basket.needsRebalance;
@@ -93,14 +122,10 @@ export function DriftIndicator({ basket }: { basket: Basket }) {
             type="button"
             className="btn btn-primary btn-sm"
             style={{ marginTop: 10 }}
-            onClick={() =>
-              toast(
-                connected ? "Rebalance transaction submitted" : "Connect your wallet to rebalance",
-                connected ? "pending" : "error"
-              )
-            }
+            disabled={rebalancing}
+            onClick={onRebalance}
           >
-            <SpinIcon /> Rebalance now
+            <SpinIcon /> {rebalancing ? "Rebalancing…" : "Rebalance now"}
           </button>
         </div>
       )}

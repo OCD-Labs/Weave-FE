@@ -1,14 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Basket } from "@/lib/types";
 import { fmtUsd, fmtNum } from "@/lib/format";
+import { toUnits } from "@/lib/units";
+import { isRealAddress } from "@/lib/web3/addresses";
+import { useBasketBalance } from "@/lib/web3/hooks";
+import { useTrade } from "@/lib/web3/useTrade";
 import { useToast } from "../toast/ToastProvider";
 import { useWallet } from "../wallet/WalletProvider";
 
 type Tab = "deposit" | "redeem";
 const FEE = 0.005;
-const MY_BALANCE = 86827; // mock contract balanceOf
+const MOCK_BALANCE = 86827; // fallback for mock baskets
 
 function Row({ k, v, warn }: { k: string; v: string; warn?: boolean }) {
   return (
@@ -27,10 +31,41 @@ export function TradePanel({ basket }: { basket: Basket }) {
   const [tab, setTab] = useState<Tab>("deposit");
   const [amt, setAmt] = useState("");
 
+  // Live path when the basket has a real on-chain address; mock simulation otherwise.
+  const live = isRealAddress(basket.address);
+  const basketAddr = live ? (basket.address as `0x${string}`) : undefined;
+  const { balance: liveBalance, refetch: refetchBalance } = useBasketBalance(basketAddr);
+  const { state: tradeState, deposit, redeem, reset: resetTrade } = useTrade(
+    (basketAddr ?? "0x0000000000000000000000000000000000000000") as `0x${string}`
+  );
+
+  const myBalance = live ? liveBalance : MOCK_BALANCE;
   const isDep = tab === "deposit";
   const num = parseFloat(amt) || 0;
   const est = isDep ? (num * (1 - FEE)) / basket.nav : num * basket.nav * (1 - FEE);
   const feeAmt = isDep ? num * FEE : num * basket.nav * FEE;
+
+  const busy = tradeState.phase !== "idle" && tradeState.phase !== "success" && tradeState.phase !== "error";
+
+  // Surface live trade phases as toasts; refresh balance on success. Kept to
+  // external-sync effects only (toasts, refetch, machine reset) — the input is
+  // cleared at submit time, not here, to avoid setState-in-effect.
+  useEffect(() => {
+    if (!live) return;
+    if (tradeState.phase === "approving") toast("Approve USDG in your wallet…", "pending");
+    if (tradeState.phase === "depositing") toast("Confirm the deposit…", "pending");
+    if (tradeState.phase === "redeeming") toast("Confirm the redemption…", "pending");
+    if (tradeState.phase === "success") {
+      toast("Transaction confirmed.", "success");
+      refetchBalance();
+      resetTrade();
+    }
+    if (tradeState.phase === "error" && tradeState.error) {
+      toast(tradeState.error, "error");
+      resetTrade();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tradeState.phase]);
 
   function submit() {
     if (!connected) {
@@ -42,6 +77,15 @@ export function TradePanel({ basket }: { basket: Basket }) {
       toast("Enter an amount", "error");
       return;
     }
+
+    if (live) {
+      if (isDep) deposit(toUnits(amt, 6));
+      else redeem(toUnits(amt, 18));
+      setAmt("");
+      return;
+    }
+
+    // Mock simulation (mock-data baskets, no real address).
     if (isDep) toast(`Depositing ${fmtUsd(num)} → approving USDG…`, "pending");
     else toast(`Redeeming ${fmtNum(num, 2)} ${basket.symbol}…`, "pending");
     setTimeout(() => toast("Transaction confirmed", "success"), 1400);
@@ -80,7 +124,7 @@ export function TradePanel({ basket }: { basket: Basket }) {
           <span className="eyebrow">{isDep ? "You pay" : "You redeem"}</span>
           {!isDep && (
             <span className="muted" style={{ fontSize: 12 }}>
-              Balance: <span className="num">{fmtNum(MY_BALANCE, 2)}</span>
+              Balance: <span className="num">{fmtNum(myBalance, 2)}</span>
             </span>
           )}
         </div>
@@ -116,7 +160,7 @@ export function TradePanel({ basket }: { basket: Basket }) {
               <button
                 type="button"
                 className="btn btn-subtle btn-sm"
-                onClick={() => setAmt(String(MY_BALANCE))}
+                onClick={() => setAmt(String(myBalance))}
               >
                 Max
               </button>
@@ -187,10 +231,18 @@ export function TradePanel({ basket }: { basket: Basket }) {
           type="button"
           className="btn btn-primary btn-block btn-lg"
           style={{ marginTop: 18 }}
-          disabled={isDep && basket.suspended}
+          disabled={(isDep && basket.suspended) || busy}
           onClick={submit}
         >
-          {!connected ? "Connect wallet" : isDep ? "Deposit USDG" : `Redeem ${basket.symbol}`}
+          {!connected
+            ? "Connect wallet"
+            : busy
+              ? isDep
+                ? "Depositing…"
+                : "Redeeming…"
+              : isDep
+                ? "Deposit USDG"
+                : `Redeem ${basket.symbol}`}
         </button>
         <p
           className="muted"

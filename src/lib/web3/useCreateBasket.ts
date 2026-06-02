@@ -26,6 +26,10 @@ export interface DeployState {
   basketAddress?: Address;
   approvalTx?: Address;
   deployTx?: Address;
+  /** True once the USDG allowance is sufficient (approved this run or already
+     set from a prior attempt). Distinguishes "approval failed" from "deploy
+     failed" in the status tracker. */
+  approved?: boolean;
 }
 
 export interface CreateBasketArgs {
@@ -65,9 +69,10 @@ export function useCreateBasket() {
           args: [account, CONTRACTS.factory],
         })) as bigint;
 
+        let approvalTx: Address | undefined;
         if (allowance < args.initialDepositRaw) {
           setState({ phase: "approving" });
-          const approvalTx = await writeContractAsync({
+          approvalTx = await writeContractAsync({
             address: CONTRACTS.usdg,
             abi: ERC20,
             functionName: "approve",
@@ -75,15 +80,17 @@ export function useCreateBasket() {
           });
           setState({ phase: "approving", approvalTx });
           await publicClient.waitForTransactionReceipt({ hash: approvalTx });
-          setState({ phase: "approved", approvalTx });
         }
+        // Allowance is now sufficient (approved this run or already set).
+        setState({ phase: "approved", approvalTx, approved: true });
 
         // 2) Deploy the basket.
         setState((s) => ({ ...s, phase: "deploying" }));
-        const deployTx = await writeContractAsync({
+        const createArgs = {
           address: CONTRACTS.factory,
           abi: FACTORY,
-          functionName: "createBasket",
+          functionName: "createBasket" as const,
+          account,
           args: [
             args.name,
             args.symbol,
@@ -93,8 +100,11 @@ export function useCreateBasket() {
             args.rebalancingEnabled,
             BigInt(args.driftThresholdBps),
             args.initialDepositRaw,
-          ],
-        });
+          ] as const,
+        };
+        // Pre-simulation implemeted in next line to surface errors (e.g. validation, insufficient funds) before prompting the user to sign.
+        await publicClient.simulateContract(createArgs);
+        const deployTx = await writeContractAsync(createArgs);
         setState((s) => ({ ...s, phase: "confirming", deployTx }));
 
         const receipt = await publicClient.waitForTransactionReceipt({ hash: deployTx });
@@ -116,7 +126,9 @@ export function useCreateBasket() {
           basketAddress: created?.basket,
         });
       } catch (err) {
-        setState({ phase: "error", error: decodeContractError(err) });
+        // Preserve prior progress (e.g. `approved`) so the status tracker flags
+        // the correct failed step.
+        setState((s) => ({ ...s, phase: "error", error: decodeContractError(err) }));
       }
     },
     [account, publicClient, writeContractAsync]
