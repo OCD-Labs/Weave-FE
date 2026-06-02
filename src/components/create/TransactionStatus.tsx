@@ -63,24 +63,26 @@ function row(label: string, state: StepState, tx?: string) {
 export function TransactionStatus({ state }: { state: DeployState }) {
   const { phase } = state;
 
+  const approved = !!state.approved;
+
   const approval: StepState =
     phase === "approving"
       ? "active"
-      : ["approved", "deploying", "confirming", "success"].includes(phase)
+      : approved
         ? "done"
-        : phase === "error" && !state.deployTx
-          ? "error"
+        : phase === "error"
+          ? "error" // failed before/at approval
           : "pending";
 
   const deployment: StepState =
-    phase === "deploying"
-      ? "active"
-      : phase === "confirming"
+    !approved
+      ? "pending"
+      : phase === "deploying" || phase === "confirming"
         ? "active"
         : phase === "success"
           ? "done"
-          : phase === "error" && state.deployTx
-            ? "error"
+          : phase === "error"
+            ? "error" // approved, but the deploy reverted
             : "pending";
 
   const confirm: StepState =
