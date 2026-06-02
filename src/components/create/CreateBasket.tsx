@@ -247,21 +247,33 @@ export function CreateBasket() {
               {thesis.length} / 600
             </span>
           </div>
-          <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
-            <span className="muted" style={{ fontSize: 13, alignSelf: "center" }}>
+          <div style={{ marginTop: 14 }}>
+            <span className="muted" style={{ fontSize: 13 }}>
               Examples:
             </span>
-            {EXAMPLES.map((ex) => (
-              <button
-                key={ex}
-                type="button"
-                className="btn btn-subtle btn-sm"
-                onClick={() => setThesis(ex)}
-                style={{ fontWeight: 600 }}
-              >
-                {ex}
-              </button>
-            ))}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+              {EXAMPLES.map((ex) => (
+                <button
+                  key={ex}
+                  type="button"
+                  className="btn btn-subtle"
+                  onClick={() => setThesis(ex)}
+                  style={{
+                    fontWeight: 600,
+                    fontSize: 13,
+                    height: "auto",
+                    minHeight: 36,
+                    padding: "8px 12px",
+                    justifyContent: "flex-start",
+                    textAlign: "left",
+                    whiteSpace: "normal",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {ex}
+                </button>
+              ))}
+            </div>
           </div>
 
           {loading ? (
@@ -672,7 +684,7 @@ export function CreateBasket() {
             onBack={() => setStep(2)}
             onNext={() => setStep(4)}
             nextOk={configOk}
-            nextHint={!configOk ? "Name, symbol, and a $1,000+ deposit required" : ""}
+            nextHint={!configOk ? "Name, symbol, and a $10+ deposit required" : ""}
           />
         </div>
       )}

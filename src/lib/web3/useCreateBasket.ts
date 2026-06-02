@@ -80,10 +80,11 @@ export function useCreateBasket() {
 
         // 2) Deploy the basket.
         setState((s) => ({ ...s, phase: "deploying" }));
-        const deployTx = await writeContractAsync({
+        const createArgs = {
           address: CONTRACTS.factory,
           abi: FACTORY,
-          functionName: "createBasket",
+          functionName: "createBasket" as const,
+          account,
           args: [
             args.name,
             args.symbol,
@@ -93,8 +94,12 @@ export function useCreateBasket() {
             args.rebalancingEnabled,
             BigInt(args.driftThresholdBps),
             args.initialDepositRaw,
-          ],
-        });
+          ] as const,
+        };
+        // Pre-simulate so a contract revert (e.g. StalePrice) surfaces our
+        // decoded message BEFORE the wallet's gas-estimation wrapper hides it.
+        await publicClient.simulateContract(createArgs);
+        const deployTx = await writeContractAsync(createArgs);
         setState((s) => ({ ...s, phase: "confirming", deployTx }));
 
         const receipt = await publicClient.waitForTransactionReceipt({ hash: deployTx });
