@@ -1,12 +1,13 @@
 "use client";
 
-import { useReadContracts } from "wagmi";
-import { parseAbi } from "viem";
-import { registryAbi } from "./abis";
+import { useAccount, useReadContract, useReadContracts } from "wagmi";
+import { parseAbi, type Address } from "viem";
+import { basketAbi, registryAbi } from "./abis";
 import { CONTRACTS } from "./addresses";
-import { usdgToNumber } from "../units";
+import { tokensToNumber, usdgToNumber } from "../units";
 
 const REGISTRY = parseAbi(registryAbi);
+const BASKET = parseAbi(basketAbi);
 
 // Sensible fallbacks (verified live on testnet) so the UI works even if the
 // reads are pending or the RPC hiccups.
@@ -68,4 +69,31 @@ function num(v: unknown, fallback: number): number {
 }
 function big(v: unknown, fallback: bigint): bigint {
   return typeof v === "bigint" ? v : fallback;
+}
+
+/** The connected wallet's basket-token balance — the source of truth for the
+   redeem form (per the integration reference). Raw (18-dp) + display number. */
+export function useBasketBalance(basket?: Address) {
+  const { address } = useAccount();
+  const { data, refetch, isLoading } = useReadContract({
+    address: basket,
+    abi: BASKET,
+    functionName: "balanceOf",
+    args: address ? [address] : undefined,
+    query: { enabled: !!basket && !!address },
+  });
+  const raw = (data as bigint | undefined) ?? 0n;
+  return { raw, balance: tokensToNumber(raw), refetch, isLoading };
+}
+
+/** Live check whether the basket currently needs rebalancing (controls the
+   Rebalance Now button). Read fresh, never cached. */
+export function useNeedsRebalancing(basket?: Address) {
+  const { data, refetch } = useReadContract({
+    address: basket,
+    abi: BASKET,
+    functionName: "needsRebalancing",
+    query: { enabled: !!basket, refetchInterval: 30_000 },
+  });
+  return { needsRebalancing: (data as boolean | undefined) ?? false, refetch };
 }
