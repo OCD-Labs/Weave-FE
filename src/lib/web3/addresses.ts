@@ -37,6 +37,11 @@ export const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID ?? 46630);
 export const EXPLORER_URL =
   process.env.NEXT_PUBLIC_EXPLORER_URL ?? "https://explorer.testnet.chain.robinhood.com";
 
+/** True for a real 20-byte hex address (mock data uses shortened "0x..….."). */
+export function isRealAddress(addr: string | undefined): addr is Address {
+  return !!addr && /^0x[0-9a-fA-F]{40}$/.test(addr);
+}
+
 /** Build a block-explorer URL for a tx hash or address. */
 export function explorerTx(hash: string): string {
   return `${EXPLORER_URL}/tx/${hash}`;
