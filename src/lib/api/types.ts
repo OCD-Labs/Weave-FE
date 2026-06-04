@@ -1,7 +1,9 @@
-// DTOs mirroring the Weave backend OpenAPI spec (https://weave.up.railway.app).
-// All monetary/price values are STRING big-integer representations in their
-// token's smallest unit (USDG 6-dp, NAV/token 18-dp, prices per the oracle).
-// Convert with the helpers in lib/units before display — never parseFloat raw.
+// DTOs mirroring the Weave backend (Frontend Integration Specification §2,
+// verified against the live API). All monetary/price values are STRING
+// big-integer representations in their token's smallest unit:
+//   USDG 6-dp · basket/creator tokens 18-dp · oracle prices 8-dp · NAV 18-dp.
+// Percentages (`*Pct`) are pre-formatted strings, e.g. "2.45" / "-1.20" / "0.00".
+// Convert numeric units with lib/units — never parseFloat a raw integer string.
 
 export interface ApiCatalogueAsset {
   address: string;
@@ -10,14 +12,23 @@ export interface ApiCatalogueAsset {
   sector: string;
   oracle: string;
   isActive: boolean;
-  currentPriceUsdg: string;
-  priceUpdatedAt: number;
+  currentPriceUsdg: string; // 8-decimal
+  priceChange24hPct: string;
 }
 
 export interface ApiPrice {
   address: string;
-  priceUsdg: string;
-  updatedAt: number;
+  symbol: string;
+  priceUsdg: string; // 8-decimal
+  priceChange24hPct: string;
+  timestamp: number;
+}
+
+export interface ApiBasketConstituentSummary {
+  address: string;
+  symbol: string;
+  targetWeightBps: number;
+  sector: string;
 }
 
 export interface ApiBasketSummary {
@@ -31,8 +42,24 @@ export interface ApiBasketSummary {
   driftThresholdBps: number;
   createdAt: number;
   suspended: boolean;
-  navPerToken: string;
-  totalValueUsdg: string;
+  navPerToken: string; // 18-decimal
+  totalValueUsdg: string; // 6-decimal
+  navChange24hPct: string;
+  constituentCount: number;
+  constituents: ApiBasketConstituentSummary[];
+}
+
+export interface ApiBasketDetailConstituent {
+  address: string;
+  symbol: string;
+  name: string;
+  sector: string;
+  targetWeightBps: string; // string, not number
+  currentWeightBps: string; // string, not number
+  balanceRaw: string; // 18-decimal
+  priceUsdg: string; // 8-decimal, "0" before first price poll
+  valueUsdg: string; // 6-decimal, "0" before first price poll
+  priceChange24hPct: string;
 }
 
 export interface ApiNavPoint {
@@ -41,27 +68,103 @@ export interface ApiNavPoint {
   timestamp: number;
 }
 
-export interface ApiPosition {
+export interface ApiBasketDetail {
+  address: string;
+  creatorToken: string;
+  creator: string;
+  name: string;
+  symbol: string;
+  thesis: string;
+  rebalancingEnabled: boolean;
+  driftThresholdBps: number;
+  createdAt: number;
+  suspended: boolean;
+  navPerToken: string;
+  totalValueUsdg: string;
+  navChange24hPct: string;
+  navChange7dPct: string;
+  navChange30dPct: string;
+  maxDriftBps: number;
+  needsRebalancing: boolean;
+  constituents: ApiBasketDetailConstituent[];
+  performanceHistory: ApiNavPoint[];
+  rebalanceHistory: {
+    timestamp: number;
+    txHash: string;
+    triggeredBy: string;
+  }[];
+  depositHistory: {
+    investor: string;
+    usdgAmount: string;
+    basketTokensMinted: string;
+    timestamp: number;
+    txHash: string;
+  }[];
+}
+
+/** Single wallet's position in one basket. */
+export interface ApiInvestorPosition {
   basketAddress: string;
   walletAddress: string;
+  basketName: string;
+  basketSymbol: string;
+  basketNavPerToken: string; // 18-decimal
+  basketTokenBalance: string; // 18-decimal
+  currentValueUsdg: string; // 6-decimal
+  totalDepositedUsdg: string; // 6-decimal
+  unrealisedPnlUsdg: string; // 6-decimal, may be negative
+  unrealisedPnlPct: string;
+  constituents: ApiBasketConstituentSummary[];
+}
+
+export interface ApiPortfolioPosition {
+  basketAddress: string;
+  basketName: string;
+  basketSymbol: string;
+  basketNavPerToken: string;
+  rebalancingEnabled: boolean;
+  suspended: boolean;
+  basketTokenBalance: string;
+  currentValueUsdg: string;
   totalDepositedUsdg: string;
-  totalRedeemedUsdg: string;
-  netCostBasisUsdg: string;
+  unrealisedPnlUsdg: string;
+  unrealisedPnlPct: string;
+  // Per-position constituents are now returned (no client-side join needed).
+  constituents: ApiBasketConstituentSummary[];
 }
 
 export interface ApiPortfolio {
   walletAddress: string;
-  positions: ApiPosition[];
+  totalValueUsdg: string;
+  totalDepositedUsdg: string;
+  totalUnrealisedPnlUsdg: string;
+  totalUnrealisedPnlPct: string;
+  positions: ApiPortfolioPosition[];
+}
+
+export interface ApiCreatorSnapshot {
+  snapshotId: number;
+  usdgAmount: string;
+  timestamp: number;
+  txHash?: string;
+  claimableByWallet?: string;
+}
+
+export interface ApiCreatorBasket {
+  basketAddress: string;
+  basketName: string;
+  basketSymbol: string;
+  creatorTokenAddress: string;
+  totalValueUsdg: string;
+  totalClaimableUsdg: string;
+  unclaimedSnapshots: ApiCreatorSnapshot[];
+  revenueHistory: ApiCreatorSnapshot[];
 }
 
 export interface ApiCreatorDashboard {
   walletAddress: string;
-  baskets: {
-    basketAddress: string;
-    creatorTokenAddress: string;
-    name: string;
-    symbol: string;
-  }[];
+  totalClaimableUsdg: string;
+  baskets: ApiCreatorBasket[];
 }
 
 export interface ApiCreatorTokenHistory {
@@ -92,5 +195,4 @@ export interface ApiComposeResponse {
 
 export interface ApiError {
   error: string;
-  code: number;
 }

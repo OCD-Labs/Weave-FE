@@ -1,12 +1,4 @@
-
 # Weave — Frontend Integration Specification
-
-> For the frontend developer. Every direct contract read and write the UI performs,
-> with exact function signatures, argument types, return types, and notes on
-> when to call each one. Read this alongside the API reference — most data
-> comes from the backend API, contract calls are only for live reads and write operations.
-
----
 
 **Project:** Weave — Onchain Index Protocol for Tokenized Equities
 
@@ -137,8 +129,8 @@ interface CatalogueAssetDetail {
   sector: string
   oracle: string
   isActive: boolean
-  // Note: currentPriceUsdg and priceChange24hPct are NOT returned on this endpoint.
-  // Use GET /catalogue to get price data and look up by address client-side.
+  currentPriceUsdg: string   // 8-decimal integer string. "0" before first price poll
+  priceChange24hPct: string  // "0.00" when insufficient history
 }
 ```
 
@@ -191,6 +183,7 @@ interface BasketSummary {
   navChange24hPct: string      // "0.00" when insufficient history
   constituentCount: number
   constituents: {
+    address: string
     symbol: string
     targetWeightBps: number    // integer e.g. 5000 = 50%
     sector: string
@@ -297,11 +290,20 @@ Returns a single wallet's position in a specific basket.
 interface InvestorPosition {
   basketAddress: string
   walletAddress: string
+  basketName: string
+  basketSymbol: string
+  basketNavPerToken: string  // 18-decimal
   basketTokenBalance: string  // 18-decimal string e.g. "9950000000000000000"
   currentValueUsdg: string    // 6-decimal string e.g. "9920140"
   totalDepositedUsdg: string  // 6-decimal string, sum of all deposits
   unrealisedPnlUsdg: string   // 6-decimal string, may be negative e.g. "-79860"
   unrealisedPnlPct: string    // e.g. "-0.80"
+  constituents: {
+    address: string
+    symbol: string
+    targetWeightBps: number
+    sector: string
+  }[]
 }
 ```
 
@@ -334,13 +336,17 @@ interface PortfolioSummary {
     totalDepositedUsdg: string
     unrealisedPnlUsdg: string
     unrealisedPnlPct: string
+    constituents: {
+      address: string
+      symbol: string
+      targetWeightBps: number
+      sector: string
+    }[]
   }[]
 }
 ```
 
 Returns a valid response with empty `positions[]` and zero totals when the wallet has no deposit history. Does not return 404.
-
-**On constituent data in positions:** Per-position `constituents[]` is not returned. To show constituent breakdown on a portfolio card, fetch `GET /baskets` which includes `constituents[]` for each basket and join by `basketAddress` client-side.
 
 ---
 
@@ -366,6 +372,7 @@ interface CreatorDashboard {
       usdgAmount: string        // total fee amount in this snapshot
       timestamp: number
       claimableByWallet: string // wallet's proportional share based on creator token balance
+      txHash: string
     }[]
     revenueHistory: {
       snapshotId: number
@@ -462,6 +469,10 @@ interface AIProposal {
 ```
 
 The proposal always contains 3–12 constituents with weights summing to exactly 10,000 bps. All addresses are from the active catalogue. No individual weight is below 100 bps or above 5,000 bps.
+
+Note: the AI caps proposals at 12 constituents for focus and coherence. The
+contract itself supports up to `maxConstituents` (currently 20), so users can add more
+constituents manually in the review step before deploying.
 
 ---
 

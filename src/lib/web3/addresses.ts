@@ -11,11 +11,12 @@ function required(name: string, value: string | undefined): Address {
   return (value && value !== "0x..." ? value : DEFAULTS[name]) as Address;
 }
 
-// Bundled defaults: Robinhood Chain Testnet deployment (see integration reference).
+// Bundled defaults: Robinhood Chain Testnet deployment (Frontend Integration
+// Specification §15, redeployed 2026-06-04).
 const DEFAULTS: Record<string, string> = {
-  NEXT_PUBLIC_REGISTRY_ADDRESS: "0xE46331c15A61c8F99114c970f607E9b199603bb9",
-  NEXT_PUBLIC_BASKET_FACTORY_ADDRESS: "0x436d3EB9f79416b9d9d33CEe60423dc1Dc2d3d43",
-  NEXT_PUBLIC_BASKET_IMPLEMENTATION_ADDRESS: "0x977134d124C90F43F26E43Ad973214dd95b2a320",
+  NEXT_PUBLIC_REGISTRY_ADDRESS: "0x19Ab3408af6503a7D4BeC255b064f8B02A345D04",
+  NEXT_PUBLIC_BASKET_FACTORY_ADDRESS: "0xE9854c4734cd4A9dbC5086398A11df3c11f40b21",
+  NEXT_PUBLIC_BASKET_IMPLEMENTATION_ADDRESS: "0x1aceE18129477c0312228d306fD02313E9767F4E",
   NEXT_PUBLIC_USDG_ADDRESS: "0x7E955252E15c84f5768B83c41a71F9eba181802F",
 };
 

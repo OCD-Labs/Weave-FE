@@ -1,12 +1,13 @@
 import type {
+  ApiBasketDetail,
   ApiBasketSummary,
   ApiCatalogueAsset,
   ApiComposeResponse,
   ApiCreatorDashboard,
   ApiCreatorTokenHistory,
+  ApiInvestorPosition,
   ApiNavPoint,
   ApiPortfolio,
-  ApiPosition,
   ApiPrice,
 } from "./types";
 
@@ -61,11 +62,11 @@ export const weaveApi = {
   prices: () => get<ApiPrice[]>("/prices"),
 
   baskets: () => get<ApiBasketSummary[]>("/baskets"),
-  basket: (address: string) => get<ApiBasketSummary>(`/baskets/${address}`),
+  basket: (address: string) => get<ApiBasketDetail>(`/baskets/${address}`),
   performance: (address: string) =>
     get<ApiNavPoint[]>(`/baskets/${address}/performance`),
   basketPosition: (address: string, wallet: string) =>
-    get<ApiPosition>(`/baskets/${address}/positions/${wallet}`),
+    get<ApiInvestorPosition>(`/baskets/${address}/positions/${wallet}`),
 
   positions: (wallet: string) => get<ApiPortfolio>(`/positions/${wallet}`),
   creator: (wallet: string) => get<ApiCreatorDashboard>(`/creator/${wallet}`),
