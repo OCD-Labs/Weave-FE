@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useCatalogue } from "@/lib/api/hooks";
 import { mapCatalogueAsset, type UiCatalogueAsset } from "@/lib/api/map";
-import { fmtUsd } from "@/lib/format";
+import { fmtUsd, fmtPct } from "@/lib/format";
 import { SectorPill } from "../badges";
 import { Select } from "../controls";
 import { SearchIcon } from "../icons";
@@ -13,6 +13,10 @@ interface CatalogueTableProps {
   onAdd?: (asset: UiCatalogueAsset) => void;
   /** Asset addresses already chosen, shown as disabled "Added". */
   selected?: string[];
+  /** Standalone-page selection mode: hover slide-reveal toggle per row. */
+  selectable?: boolean;
+  /** Toggle handler for selectable mode. */
+  onToggle?: (asset: UiCatalogueAsset) => void;
   /** Cap the scroll height (used inside the modal). */
   maxHeight?: string;
   autoFocus?: boolean;
@@ -21,7 +25,14 @@ interface CatalogueTableProps {
 /** Searchable, sector-filterable catalogue of tokenized equities, backed by
    GET /catalogue. Shared by the Create wizard's "Add constituent" modal and
    the standalone /catalogue page. */
-export function CatalogueTable({ onAdd, selected = [], maxHeight, autoFocus }: CatalogueTableProps) {
+export function CatalogueTable({
+  onAdd,
+  selected = [],
+  selectable = false,
+  onToggle,
+  maxHeight,
+  autoFocus,
+}: CatalogueTableProps) {
   const { data, isLoading, isError, error, refetch } = useCatalogue();
   const [query, setQuery] = useState("");
   const [sector, setSector] = useState("All");
@@ -49,7 +60,8 @@ export function CatalogueTable({ onAdd, selected = [], maxHeight, autoFocus }: C
     ...sectors.map((s) => [s, s] as [string, string]),
   ];
 
-  const colSpan = onAdd ? 5 : 4;
+  const hasAction = !!onAdd || selectable;
+  const colSpan = hasAction ? 6 : 5;
 
   return (
     <>
@@ -90,7 +102,8 @@ export function CatalogueTable({ onAdd, selected = [], maxHeight, autoFocus }: C
                 <th>Company</th>
                 <th>Sector</th>
                 <th style={{ textAlign: "right" }}>Price</th>
-                {onAdd && <th></th>}
+                <th style={{ textAlign: "right" }}>24h</th>
+                {hasAction && <th style={{ width: 56 }}></th>}
               </tr>
             </thead>
             <tbody>
@@ -107,9 +120,17 @@ export function CatalogueTable({ onAdd, selected = [], maxHeight, autoFocus }: C
 
               {!isLoading &&
                 list.map((c) => {
-                  const added = selected.includes(c.address);
+                  const isSelected = selected.includes(c.address);
+                  const rowClass = selectable
+                    ? `cat-row ${isSelected ? "cat-row-selected" : ""}`
+                    : "";
                   return (
-                    <tr key={c.address}>
+                    <tr
+                      key={c.address}
+                      className={rowClass}
+                      onClick={selectable ? () => onToggle?.(c) : undefined}
+                      style={selectable ? { cursor: "pointer" } : undefined}
+                    >
                       <td>
                         <span className="tag">{c.sym}</span>
                       </td>
@@ -120,16 +141,35 @@ export function CatalogueTable({ onAdd, selected = [], maxHeight, autoFocus }: C
                       <td className="num" style={{ textAlign: "right" }}>
                         {fmtUsd(c.price)}
                       </td>
+                      <td
+                        className={`num ${c.chg >= 0 ? "up" : "down"}`}
+                        style={{ textAlign: "right" }}
+                      >
+                        {fmtPct(c.chg)}
+                      </td>
+
                       {onAdd && (
                         <td style={{ textAlign: "right" }}>
                           <button
                             type="button"
                             className="btn btn-subtle btn-sm"
-                            disabled={added}
+                            disabled={isSelected}
                             onClick={() => onAdd(c)}
                           >
-                            {added ? "Added" : "Add"}
+                            {isSelected ? "Added" : "Add"}
                           </button>
+                        </td>
+                      )}
+
+                      {selectable && (
+                        <td style={{ textAlign: "right", padding: 0, position: "relative" }}>
+                          <span
+                            className="cat-toggle"
+                            aria-hidden="true"
+                            data-selected={isSelected}
+                          >
+                            {isSelected ? "✓" : "+"}
+                          </span>
                         </td>
                       )}
                     </tr>
