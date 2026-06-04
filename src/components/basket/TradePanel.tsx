@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Basket } from "@/lib/types";
+import type { UiBasketDetail } from "@/lib/api/map";
 import { fmtUsd, fmtNum } from "@/lib/format";
 import { toUnits } from "@/lib/units";
 import { isRealAddress } from "@/lib/web3/addresses";
-import { useBasketBalance } from "@/lib/web3/hooks";
+import { useBasketBalance, usePaused } from "@/lib/web3/hooks";
 import { useTrade } from "@/lib/web3/useTrade";
 import { useToast } from "../toast/ToastProvider";
 import { useWallet } from "../wallet/WalletProvider";
@@ -25,7 +25,7 @@ function Row({ k, v, warn }: { k: string; v: string; warn?: boolean }) {
   );
 }
 
-export function TradePanel({ basket }: { basket: Basket }) {
+export function TradePanel({ basket }: { basket: UiBasketDetail }) {
   const { toast } = useToast();
   const { connected, connect } = useWallet();
   const [tab, setTab] = useState<Tab>("deposit");
@@ -38,11 +38,18 @@ export function TradePanel({ basket }: { basket: Basket }) {
   const { state: tradeState, deposit, redeem, reset: resetTrade } = useTrade(
     (basketAddr ?? "0x0000000000000000000000000000000000000000") as `0x${string}`
   );
+  const paused = usePaused();
 
   const myBalance = live ? liveBalance : MOCK_BALANCE;
   const isDep = tab === "deposit";
   const num = parseFloat(amt) || 0;
-  const est = isDep ? (num * (1 - FEE)) / basket.nav : num * basket.nav * (1 - FEE);
+  // First-depositor edge case: when nav is 0, the contract establishes
+  // 1 USDG = 1 basket token, so the deposit estimate is the net USDG itself.
+  const est = isDep
+    ? basket.nav > 0
+      ? (num * (1 - FEE)) / basket.nav
+      : num * (1 - FEE)
+    : num * basket.nav * (1 - FEE);
   const feeAmt = isDep ? num * FEE : num * basket.nav * FEE;
 
   const busy = tradeState.phase !== "idle" && tradeState.phase !== "success" && tradeState.phase !== "error";
@@ -77,6 +84,10 @@ export function TradePanel({ basket }: { basket: Basket }) {
       toast("Enter an amount", "error");
       return;
     }
+    if (paused) {
+      toast("The protocol is temporarily paused. Please try again later.", "error");
+      return;
+    }
 
     if (live) {
       if (isDep) deposit(toUnits(amt, 6));
@@ -94,6 +105,20 @@ export function TradePanel({ basket }: { basket: Basket }) {
 
   return (
     <div className="card" style={{ overflow: "hidden" }}>
+      {paused && (
+        <div
+          style={{
+            padding: "10px 16px",
+            background: "var(--warn-tint)",
+            color: "var(--warn)",
+            fontSize: 12.5,
+            fontWeight: 600,
+            textAlign: "center",
+          }}
+        >
+          Protocol paused — deposits and redemptions are temporarily disabled.
+        </div>
+      )}
       <div style={{ display: "flex", padding: 6, gap: 4, background: "var(--surface)" }}>
         {(["deposit", "redeem"] as const).map((k) => (
           <button
@@ -231,7 +256,7 @@ export function TradePanel({ basket }: { basket: Basket }) {
           type="button"
           className="btn btn-primary btn-block btn-lg"
           style={{ marginTop: 18 }}
-          disabled={(isDep && basket.suspended) || busy}
+          disabled={(isDep && basket.suspended) || busy || paused}
           onClick={submit}
         >
           {!connected

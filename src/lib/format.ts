@@ -2,8 +2,6 @@
    client render identical strings — avoids React hydration mismatches.
    Mirrors the prototype's fmtUsd / fmtUsdCompact / fmtPct / fmtNum / bps / ago. */
 
-import { NOW } from "./data";
-
 function groupThousands(intStr: string): string {
   return intStr.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
@@ -46,9 +44,11 @@ export function bps(b: number): string {
   return `${(b / 100).toFixed(b % 100 === 0 ? 0 : 1)}%`;
 }
 
-/** Relative time from the fixed reference NOW. */
+/** Relative time. Uses real wall-clock time so live data tracks the true now;
+   only ever called from client components, so Date.now() is hydration-safe. */
 export function ago(t: number): string {
-  const s = (NOW - t) / 1000;
+  const s = (Date.now() - t) / 1000;
+  if (s < 60) return "just now";
   if (s < 3600) return `${Math.round(s / 60)}m ago`;
   if (s < 86400) return `${Math.round(s / 3600)}h ago`;
   return `${Math.round(s / 86400)}d ago`;
