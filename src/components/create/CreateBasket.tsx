@@ -7,7 +7,8 @@ import { fmtUsd } from "@/lib/format";
 import { useComposeBasket } from "@/lib/api/hooks";
 import { mapComposeResponse, type UiCatalogueAsset } from "@/lib/api/map";
 import { toUnits } from "@/lib/units";
-import { useRegistryParams } from "@/lib/web3/hooks";
+import { takeBasketDraft } from "@/lib/basketDraft";
+import { useRegistryParams, usePaused } from "@/lib/web3/hooks";
 import { useCreateBasket } from "@/lib/web3/useCreateBasket";
 import { useToast } from "../toast/ToastProvider";
 import { useWallet } from "../wallet/WalletProvider";
@@ -67,6 +68,7 @@ export function CreateBasket() {
   const { connected, connect } = useWallet();
   const compose = useComposeBasket();
   const registry = useRegistryParams();
+  const paused = usePaused();
   const { state: deployState, deploy: runDeploy, reset: resetDeploy } = useCreateBasket();
 
   const [step, setStep] = useState(1);
@@ -74,6 +76,9 @@ export function CreateBasket() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [aiMeta, setAiMeta] = useState<{ overall: string; risk: string } | null>(null);
   const [showCat, setShowCat] = useState(false);
+  // True when the wizard opened pre-filled from a catalogue selection (step 1
+  // then offers "continue to review" instead of starting empty).
+  const [fromCatalogue, setFromCatalogue] = useState(false);
 
   // config
   const [name, setName] = useState("");
@@ -86,6 +91,29 @@ export function CreateBasket() {
   const aiError = compose.isError;
   const descOk = thesis.trim().length >= 20;
   const deploying = deployState.phase !== "idle" && deployState.phase !== "error";
+
+  // Read-and-clear a catalogue hand-off once on mount. Done in an effect (not a
+  // lazy initializer) so the server render — which has no sessionStorage — and
+  // the client's first render agree, avoiding a hydration mismatch. The mount
+  // sync is intentional and one-shot.
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    const draft = takeBasketDraft();
+    if (!draft) return;
+    setRows(
+      draft.map((a) => ({
+        address: a.address,
+        sym: a.sym,
+        name: a.name,
+        sector: a.sector,
+        price: a.price,
+        weight: 0,
+        rationale: "Selected from the catalogue.",
+      }))
+    );
+    setFromCatalogue(true);
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // On successful deploy, navigate to the new basket (or marketplace fallback).
   useEffect(() => {
@@ -118,6 +146,7 @@ export function CreateBasket() {
           }))
         );
         setAiMeta({ overall: proposal.overallRationale, risk: proposal.riskNotes });
+        setFromCatalogue(false);
         setStep(2);
       },
       onError: (err) => {
@@ -186,6 +215,10 @@ export function CreateBasket() {
     if (!connected) {
       toast("Connect your wallet to deploy", "error");
       connect();
+      return;
+    }
+    if (paused) {
+      toast("The protocol is temporarily paused. Please try again later.", "error");
       return;
     }
     if (!rows || !reviewOk || !configOk) {
@@ -302,6 +335,47 @@ export function CreateBasket() {
                 </button>
               </div>
             </div>
+          ) : fromCatalogue ? (
+            <>
+              <div
+                style={{
+                  marginTop: 22,
+                  padding: 14,
+                  background: "var(--accent-tint)",
+                  borderRadius: "var(--r-sm)",
+                  fontSize: 13.5,
+                  lineHeight: 1.5,
+                }}
+              >
+                <strong style={{ color: "var(--accent-strong)" }}>
+                  {rows!.length} {rows!.length === 1 ? "asset" : "assets"} from the catalogue
+                </strong>{" "}
+                are ready. Add a description, then continue to set their weights.
+              </div>
+              <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-lg"
+                  disabled={!descOk}
+                  onClick={() => setStep(2)}
+                >
+                  Continue to review →
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-lg"
+                  disabled={!descOk}
+                  onClick={runAI}
+                >
+                  <SparkleIcon /> Compose with AI instead
+                </button>
+              </div>
+              {!descOk && (
+                <p className="muted" style={{ fontSize: 12.5, marginTop: 10 }}>
+                  Add at least 20 characters to continue.
+                </p>
+              )}
+            </>
           ) : (
             <>
               <div style={{ display: "flex", gap: 10, marginTop: 24, flexWrap: "wrap" }}>

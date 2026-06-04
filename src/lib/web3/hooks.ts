@@ -64,6 +64,18 @@ export function useRegistryParams(): RegistryParams {
   };
 }
 
+/** Whether the protocol is globally paused — disable deposit/create when true.
+   Polled so a governance pause/unpause reflects without a reload. */
+export function usePaused(): boolean {
+  const { data } = useReadContract({
+    address: CONTRACTS.registry,
+    abi: REGISTRY,
+    functionName: "paused",
+    query: { refetchInterval: 30_000 },
+  });
+  return (data as boolean | undefined) ?? false;
+}
+
 function num(v: unknown, fallback: number): number {
   return typeof v === "bigint" ? Number(v) : fallback;
 }

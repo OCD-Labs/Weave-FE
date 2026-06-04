@@ -44,28 +44,30 @@ export function DonutChart({
     onHover?.(i);
   }
 
-  let acc = 0;
-  const segments = slices.map((c, i) => {
-    const len = (weight(c) / total) * C;
-    const seg = (
-      <circle
-        key={c.sym}
-        cx={R}
-        cy={R}
-        r={r}
-        fill="none"
-        stroke={i === hi ? "var(--accent)" : palette[i]}
-        strokeWidth={i === hi ? thickness + 4 : thickness}
-        strokeDasharray={`${len} ${C - len}`}
-        strokeDashoffset={-acc}
-        style={{ transition: "stroke-width 0.12s" }}
-        onMouseEnter={() => setHover(i)}
-        onMouseLeave={() => setHover(null)}
-      />
-    );
-    acc += len;
-    return seg;
-  });
+  // Arc length + cumulative offset for each slice, computed without mutating a
+  // closure variable during render (React Compiler immutability rule).
+  const lengths = slices.map((c) => (weight(c) / total) * C);
+  const offsets = lengths.reduce<number[]>((acc, len, i) => {
+    acc.push(i === 0 ? 0 : acc[i - 1] + lengths[i - 1]);
+    return acc;
+  }, []);
+
+  const segments = slices.map((c, i) => (
+    <circle
+      key={c.sym}
+      cx={R}
+      cy={R}
+      r={r}
+      fill="none"
+      stroke={i === hi ? "var(--accent)" : palette[i]}
+      strokeWidth={i === hi ? thickness + 4 : thickness}
+      strokeDasharray={`${lengths[i]} ${C - lengths[i]}`}
+      strokeDashoffset={-offsets[i]}
+      style={{ transition: "stroke-width 0.12s" }}
+      onMouseEnter={() => setHover(i)}
+      onMouseLeave={() => setHover(null)}
+    />
+  ));
 
   return (
     <div style={{ position: "relative", width: size, height: size, flex: "none" }}>

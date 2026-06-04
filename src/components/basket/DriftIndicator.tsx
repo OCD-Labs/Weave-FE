@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import type { Basket } from "@/lib/types";
+import type { UiBasketDetail } from "@/lib/api/map";
 import { bps } from "@/lib/format";
 import { isRealAddress } from "@/lib/web3/addresses";
 import { useRebalance } from "@/lib/web3/useTrade";
@@ -9,7 +9,7 @@ import { useToast } from "../toast/ToastProvider";
 import { useWallet } from "../wallet/WalletProvider";
 import { SpinIcon } from "../icons";
 
-export function DriftIndicator({ basket }: { basket: Basket }) {
+export function DriftIndicator({ basket }: { basket: UiBasketDetail }) {
   const { toast } = useToast();
   const { connected, connect } = useWallet();
   const live = isRealAddress(basket.address);

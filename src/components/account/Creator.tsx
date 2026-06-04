@@ -1,15 +1,50 @@
 "use client";
 
+import { useMemo } from "react";
+import Link from "next/link";
+import { useCreator } from "@/lib/api/hooks";
+import { mapCreatorDashboard, type UiCreatorDashboard } from "@/lib/api/map";
 import { CREATED } from "@/lib/data";
+import { useDataSource } from "@/lib/dataSource";
 import { fmtUsd, fmtUsdCompact } from "@/lib/format";
 import { useWallet } from "../wallet/WalletProvider";
-import { useToast } from "../toast/ToastProvider";
 import { ConnectGate, BigStat } from "./primitives";
 import { CreatorBasketCard } from "./CreatorBasketCard";
 
+/** Mock creator dashboard mapped to the same UiCreatorDashboard shape. */
+function mockDashboard(): UiCreatorDashboard {
+  const baskets = CREATED.map((c) => ({
+    basketAddress: c.basket.address,
+    slug: c.basket.slug,
+    name: c.basket.name,
+    symbol: c.basket.symbol,
+    creatorToken: c.creatorToken,
+    aum: c.basket.aum,
+    claimable: c.claimable,
+    totalEarned: c.totalEarned,
+    revenue: c.revenue.map((r) => ({ id: r.id, usdc: r.usdc, t: r.t })),
+  }));
+  return {
+    totalClaimable: baskets.reduce((s, b) => s + b.claimable, 0),
+    totalEarned: baskets.reduce((s, b) => s + b.totalEarned, 0),
+    totalAum: baskets.reduce((s, b) => s + b.aum, 0),
+    baskets,
+  };
+}
+
 export function Creator() {
-  const { connected } = useWallet();
-  const { toast } = useToast();
+  const { connected, fullAddress } = useWallet();
+  const dataSource = useDataSource();
+  const isMock = dataSource === "mock";
+
+  const { data, isLoading, isError, error, refetch } = useCreator(
+    isMock ? undefined : fullAddress
+  );
+
+  const dash = useMemo<UiCreatorDashboard | null>(() => {
+    if (isMock) return mockDashboard();
+    return data ? mapCreatorDashboard(data) : null;
+  }, [isMock, data]);
 
   if (!connected) {
     return (
@@ -17,19 +52,6 @@ export function Creator() {
         title="Connect to open your creator dashboard"
         sub="Track the baskets you've published, your creator-token ownership, and revenue you can claim — earned continuously through ERC-7641."
       />
-    );
-  }
-
-  const created = CREATED;
-  const totalClaimable = created.reduce((s, c) => s + c.claimable, 0);
-  const totalEarned = created.reduce((s, c) => s + c.totalEarned, 0);
-  const totalAum = created.reduce((s, c) => s + c.basket.aum, 0);
-
-  function claimAll() {
-    toast(`Claiming from ${created.length} baskets…`, "pending");
-    setTimeout(
-      () => toast(`Claimed ${fmtUsd(totalClaimable)} across all baskets`, "success"),
-      1600
     );
   }
 
@@ -50,28 +72,86 @@ export function Creator() {
             Revenue from baskets you&apos;ve published, via ERC-7641.
           </p>
         </div>
-        <button
-          type="button"
-          className="btn btn-primary btn-lg"
-          onClick={claimAll}
-          disabled={totalClaimable < 0.01}
-        >
-          Claim all · {fmtUsd(totalClaimable)}
-        </button>
+        {dash && dash.baskets.length > 0 && (
+          <div className="card card-pad" style={{ padding: "12px 16px", textAlign: "right" }}>
+            <div className="eyebrow" style={{ fontSize: 9.5 }}>
+              Total claimable
+            </div>
+            <div className="num" style={{ fontSize: 22, fontWeight: 800, color: "var(--up)" }}>
+              {fmtUsd(dash.totalClaimable)}
+            </div>
+          </div>
+        )}
       </div>
 
+      {!isMock && isLoading ? (
+        <CreatorSkeleton />
+      ) : !isMock && isError ? (
+        <div className="card card-pad mt-6 text-center">
+          <div className="down" style={{ fontWeight: 700, fontSize: 16 }}>
+            Couldn&apos;t load your creator dashboard
+          </div>
+          <p className="muted" style={{ marginTop: 6, fontSize: 14 }}>
+            {error instanceof Error ? error.message : "Please try again."}
+          </p>
+          <button type="button" className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => refetch()}>
+            Retry
+          </button>
+        </div>
+      ) : !dash || dash.baskets.length === 0 ? (
+        <EmptyCreator />
+      ) : (
+        <>
+          <div className="my-6 grid grid-cols-2 gap-[var(--gap)] md:grid-cols-4">
+            <BigStat label="Claimable now" value={fmtUsd(dash.totalClaimable)} cls="up" />
+            <BigStat label="Earned to date" value={fmtUsd(dash.totalEarned)} />
+            <BigStat label="AUM across baskets" value={fmtUsdCompact(dash.totalAum)} />
+            <BigStat label="Baskets published" value={dash.baskets.length} />
+          </div>
+
+          <div className="grid gap-[var(--gap)]">
+            {dash.baskets.map((c) => (
+              <CreatorBasketCard key={c.basketAddress} c={c} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function EmptyCreator() {
+  return (
+    <div className="card card-pad mt-6" style={{ textAlign: "center", padding: "56px 24px" }}>
+      <h2 style={{ fontSize: 20 }}>You haven&apos;t published any baskets</h2>
+      <p className="muted" style={{ marginTop: 8, fontSize: 14 }}>
+        Create a basket to start earning a continuous share of its management-fee revenue.
+      </p>
+      <Link href="/create" className="btn btn-primary" style={{ marginTop: 18 }}>
+        Create a basket
+      </Link>
+    </div>
+  );
+}
+
+function CreatorSkeleton() {
+  return (
+    <>
       <div className="my-6 grid grid-cols-2 gap-[var(--gap)] md:grid-cols-4">
-        <BigStat label="Claimable now" value={fmtUsd(totalClaimable)} cls="up" />
-        <BigStat label="Earned to date" value={fmtUsd(totalEarned)} />
-        <BigStat label="AUM across baskets" value={fmtUsdCompact(totalAum)} />
-        <BigStat label="Baskets published" value={created.length} />
-      </div>
-
-      <div className="grid gap-[var(--gap)]">
-        {created.map((c) => (
-          <CreatorBasketCard key={c.basket.address} c={c} />
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="card card-pad">
+            <div className="skel" style={{ height: 12, width: "60%" }} />
+            <div className="skel" style={{ height: 26, width: "80%", marginTop: 10 }} />
+          </div>
         ))}
       </div>
-    </div>
+      <div className="grid gap-[var(--gap)]">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="card" style={{ height: 200 }}>
+            <div className="skel" style={{ height: "100%", width: "100%" }} />
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

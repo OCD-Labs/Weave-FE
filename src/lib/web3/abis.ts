@@ -7,32 +7,53 @@
 
 // Custom errors the contracts revert with — included so viem can decode a
 // revert's selector into a named error (otherwise we only get the raw 4-byte
-// signature). Param shapes per the integration reference §Error Handling.
+// signature). Signatures verified from the Frontend Integration Specification §6.
 export const contractErrors = [
-  "error BasketSuspended()",
-  "error InsufficientSlippage()",
-  "error StalePrice(address asset)",
-  "error WeightSumInvalid(uint256 sum)",
-  "error MinDepositNotMet()",
-  "error RebalancingNotEnabled()",
-  "error DriftThresholdNotMet()",
+  // BasketFactory
   "error TooFewConstituents(uint256 count)",
   "error TooManyConstituents(uint256 count, uint256 max)",
+  "error ArrayLengthMismatch()",
+  "error WeightSumInvalid(uint256 sum)",
   "error WeightTooLow(address asset, uint256 weight)",
   "error WeightTooHigh(address asset, uint256 weight)",
-  "error DuplicateConstituent(address asset)",
+  "error InitialDepositTooLow(uint256 provided, uint256 required)",
   "error InvalidDriftThreshold()",
-  "error AlreadyClaimed(address account, uint256 snapshotId)",
-  "error NothingToClaim()",
+  "error DuplicateConstituent(address asset)",
+  // BasketImplementation
+  "error BasketSuspended()",
+  "error ProtocolPaused()",
+  "error RebalancingNotEnabled()",
+  "error DriftThresholdNotMet()",
+  "error InsufficientSlippage()",
   "error ZeroAmount()",
+  // WeaveRegistry
+  "error StalePrice(address asset)",
+  "error NegativePrice(address asset)",
+  "error AssetNotActive(address asset)",
+  "error AssetNotFound(address asset)",
+  "error InvalidFeeBps()",
+  "error InvalidFeeSplit()",
+  "error InvalidParameter()",
+  // CreatorToken
+  "error AlreadyClaimed(address account, uint256 snapshotId)",
+  "error SnapshotDoesNotExist(uint256 snapshotId)",
+  "error NothingToClaim()",
+  "error InsufficientBalance(uint256 available, uint256 required)",
+  // SwapRouter (surfaces through deposit/redeem/rebalance)
+  "error InsufficientLiquidity(address asset, uint256 requested, uint256 available)",
+  "error InsufficientOutput(uint256 output, uint256 minOutput)",
 ] as const;
 
 export const registryAbi = [
   "function managementFeeBps() view returns (uint256)",
+  "function protocolShareBps() view returns (uint256)",
+  "function creatorShareBps() view returns (uint256)",
   "function minFirstDepositUsdg() view returns (uint256)",
   "function maxConstituents() view returns (uint256)",
   "function minWeightBps() view returns (uint256)",
-  "function protocolShareBps() view returns (uint256)",
+  "function oracleStalenessSecs() view returns (uint256)",
+  "function paused() view returns (bool)",
+  "function isBasket(address) view returns (bool)",
 ] as const;
 
 export const erc20Abi = [
@@ -68,7 +89,8 @@ export const basketAbi = [
 
 export const factoryAbi = [
   "function createBasket(string name, string symbol, string thesis, address[] constituents, uint256[] targetWeightsBps, bool rebalancingEnabled, uint256 driftThresholdBps, uint256 initialDepositUsdg)",
-  "event BasketCreated(address indexed basket, address indexed creatorToken, address indexed creator, string name, bool rebalancingEnabled)",
+  // 9-arg signature per Frontend Integration Specification §12 (was 5 args).
+  "event BasketCreated(address indexed basket, address indexed creatorToken, address indexed creator, string name, string symbol, string thesis, address[] constituents, uint256[] targetWeightsBps, bool rebalancingEnabled)",
   ...contractErrors,
 ] as const;
 

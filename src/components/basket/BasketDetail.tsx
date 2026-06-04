@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { Basket } from "@/lib/types";
+import type { UiBasketDetail } from "@/lib/api/map";
 import { fmtUsd, fmtUsdCompact, fmtPct, fmtNum, bps, ago } from "@/lib/format";
+import { explorerTx } from "@/lib/web3/addresses";
 import { Segmented } from "../controls";
 import { RebalBadge, ChangeBadge, SectorPill } from "../badges";
 import { SpinIcon } from "../icons";
@@ -22,6 +23,13 @@ const RANGES: [Range, string][] = [
   ["all", "All"],
 ];
 
+// Shorten a real 0x hash/address (40 or 64 hex chars); pass through anything
+// else (e.g. a mock ENS name like "thesis.eth").
+function shortLabel(s: string): string {
+  return /^0x[0-9a-fA-F]{40,64}$/.test(s) ? `${s.slice(0, 6)}…${s.slice(-4)}` : s;
+}
+const creatorLabel = shortLabel;
+
 function MiniStat({ label, value, cls }: { label: string; value: string; cls?: string }) {
   return (
     <div style={{ background: "var(--surface)", borderRadius: "var(--r-sm)", padding: "10px 12px" }}>
@@ -35,7 +43,7 @@ function MiniStat({ label, value, cls }: { label: string; value: string; cls?: s
   );
 }
 
-export function BasketDetail({ basket }: { basket: Basket }) {
+export function BasketDetail({ basket }: { basket: UiBasketDetail }) {
   const [range, setRange] = useState<Range>("30d");
   const [hoverSlice, setHoverSlice] = useState<number | null>(null);
   const [actTab, setActTab] = useState<ActTab>("deposits");
@@ -100,11 +108,11 @@ export function BasketDetail({ basket }: { basket: Basket }) {
           <div style={{ display: "flex", gap: 18, marginTop: 14, fontSize: 13, flexWrap: "wrap" }}>
             <span className="muted">
               Created by{" "}
-              <span style={{ color: "var(--accent-strong)", fontWeight: 600 }}>
-                {basket.creatorName}
+              <span className="mono" style={{ color: "var(--accent-strong)", fontWeight: 600 }}>
+                {creatorLabel(basket.creator)}
               </span>
             </span>
-            <span className="muted mono">{basket.address}</span>
+            <span className="muted mono">{shortLabel(basket.address)}</span>
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
@@ -372,7 +380,7 @@ export function BasketDetail({ basket }: { basket: Basket }) {
                     {basket.deposits.map((d, i) => (
                       <tr key={i}>
                         <td className="mono" style={{ fontSize: 13 }}>
-                          {d.investor}
+                          {shortLabel(d.investor)}
                         </td>
                         <td className="num" style={{ textAlign: "right" }}>
                           {fmtUsd(d.usdc)}
@@ -384,9 +392,22 @@ export function BasketDetail({ basket }: { basket: Basket }) {
                           {ago(d.t)}
                         </td>
                         <td style={{ textAlign: "right" }}>
-                          <span className="muted" title="View on explorer">
-                            ↗
-                          </span>
+                          {d.txHash ? (
+                            <a
+                              href={explorerTx(d.txHash)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="muted"
+                              title="View on explorer"
+                              style={{ textDecoration: "none" }}
+                            >
+                              ↗
+                            </a>
+                          ) : (
+                            <span className="muted" style={{ opacity: 0.4 }}>
+                              ↗
+                            </span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -406,11 +427,22 @@ export function BasketDetail({ basket }: { basket: Basket }) {
                       <tr key={i}>
                         <td style={{ fontWeight: 600 }}>
                           <span className="badge badge-accent">
-                            <SpinIcon /> {r.by}
+                            <SpinIcon /> {shortLabel(r.by)}
                           </span>
                         </td>
                         <td className="mono" style={{ fontSize: 13 }}>
-                          {r.tx}
+                          {r.tx ? (
+                            <a
+                              href={explorerTx(r.tx)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ color: "var(--accent-strong)", textDecoration: "none" }}
+                            >
+                              {shortLabel(r.tx)} ↗
+                            </a>
+                          ) : (
+                            shortLabel(r.tx)
+                          )}
                         </td>
                         <td className="muted" style={{ textAlign: "right", fontSize: 13 }}>
                           {ago(r.t)}

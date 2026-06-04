@@ -35,6 +35,13 @@ function mockToSummary(b: Basket): UiBasketSummary {
     suspended: b.suspended ?? false,
     nav: b.nav,
     aum: b.aum,
+    navChg24: b.navChg24,
+    constituentCount: b.constituents.length,
+    constituents: b.constituents.map((c) => ({
+      sym: c.sym,
+      targetWeightBps: c.target,
+      sector: c.sector,
+    })),
   };
 }
 

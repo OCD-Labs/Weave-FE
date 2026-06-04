@@ -1,16 +1,18 @@
 import Link from "next/link";
 import type { UiBasketSummary } from "@/lib/api/map";
-import { fmtUsdCompact, fmtUsd } from "@/lib/format";
+import { fmtUsdCompact, fmtPct } from "@/lib/format";
 import { RebalBadge } from "../badges";
 
 function shortAddr(a: string): string {
   return `${a.slice(0, 6)}…${a.slice(-4)}`;
 }
 
-/** Marketplace card backed by the live GET /baskets summary. The list endpoint
-   omits 24h change, sparkline, and constituents, so this shows what's actually
-   available (NAV, AUM, creator, rebalancing) without fabricating data. */
+/** Marketplace card backed by the live GET /baskets summary, which now includes
+   24h NAV change and inline constituents. */
 export function LiveBasketCard({ basket }: { basket: UiBasketSummary }) {
+  const up = basket.navChg24 >= 0;
+  const extra = basket.constituentCount - 5;
+
   return (
     <Link
       href={`/baskets/${basket.slug}`}
@@ -43,6 +45,21 @@ export function LiveBasketCard({ basket }: { basket: UiBasketSummary }) {
         </p>
       </div>
 
+      {basket.constituents.length > 0 && (
+        <div style={{ display: "flex", gap: 6, padding: "0 20px 14px", flexWrap: "wrap" }}>
+          {basket.constituents.slice(0, 5).map((c) => (
+            <span key={c.sym} className="tag" style={{ fontSize: 11 }}>
+              {c.sym}
+            </span>
+          ))}
+          {extra > 0 && (
+            <span className="tag" style={{ fontSize: 11 }}>
+              +{extra}
+            </span>
+          )}
+        </div>
+      )}
+
       <div
         style={{
           display: "flex",
@@ -64,10 +81,10 @@ export function LiveBasketCard({ basket }: { basket: UiBasketSummary }) {
         </div>
         <div style={{ textAlign: "right" }}>
           <div className="eyebrow" style={{ fontSize: 9.5 }}>
-            NAV / token
+            24h
           </div>
-          <div className="num" style={{ fontSize: 17, fontWeight: 750 }}>
-            {fmtUsd(basket.nav)}
+          <div className={`num ${up ? "up" : "down"}`} style={{ fontSize: 17, fontWeight: 750 }}>
+            {fmtPct(basket.navChg24)}
           </div>
         </div>
         <RebalBadge on={basket.rebalancing} small />

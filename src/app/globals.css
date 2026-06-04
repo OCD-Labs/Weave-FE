@@ -588,11 +588,85 @@
   .tbl tr:last-child td {
     border-bottom: none;
   }
-  .tbl-hover tbody tr {
+  /* .tbl-hover tbody tr {
     transition: background 0.12s;
-  }
+  } */
   .tbl-hover tbody tr:hover {
     background: var(--surface);
+  }
+
+  /* ---- Selectable catalogue rows: slide left on hover/selected to reveal
+     the select toggle on the right edge. ---- */
+  .cat-row {
+    transition: transform 0.32s cubic-bezier(0.33, 1, 0.68, 1), background 0.25s ease;
+    will-change: transform;
+  }
+  .cat-row:hover,
+  .cat-row-selected {
+    transform: translateX(-12px);
+  }
+  .cat-row-selected {
+    background: var(--accent-tint);
+  }
+  .cat-row-selected:hover {
+    background: var(--accent-tint);
+  }
+  /* The toggle puck sits at the right edge, revealed as the row slides left. */
+  .cat-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%) scale(0.6);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--muted-2);
+    background: var(--up-tint);
+    opacity: 0;
+    transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.33, 1, 0.68, 1),
+      background 0.2s ease, color 0.2s ease;
+    pointer-events: none;
+  }
+  .cat-row:hover .cat-toggle {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+  .cat-toggle[data-selected="true"] {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  /* ---- Floating action bar (catalogue "create basket" CTA) ---- */
+  .float-bar {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 12px 10px 20px;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 999px;
+    box-shadow: var(--shadow-lg);
+    animation: reveal 0.35s cubic-bezier(0.22, 0.7, 0.25, 1) both;
+  }
+  @media (max-width: 560px) {
+    .float-bar {
+      left: 12px;
+      right: 12px;
+      transform: none;
+      justify-content: space-between;
+    }
   }
 
   /* ---- Toasts (bottom-right; full-width bottom sheet on mobile) ---- */
