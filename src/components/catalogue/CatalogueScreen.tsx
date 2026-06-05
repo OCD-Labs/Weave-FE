@@ -26,12 +26,11 @@ export function CatalogueScreen() {
   }
 
   return (
-    <div className="wrap-wide reveal" style={{ paddingTop: 40, paddingBottom: 96 }}>
+    <div className="wrap-wide reveal w-full" style={{ paddingTop: 40, paddingBottom: 96 }}>
       <div style={{ marginBottom: 22 }}>
         <h1 style={{ fontSize: 30 }}>Catalogue</h1>
         <p className="muted" style={{ marginTop: 6, fontSize: 15 }}>
-          Every tokenized equity available for basket construction on Robinhood Chain. Select assets
-          to start a new basket.
+          Every tokenized equity available for basket construction on Robinhood Chain. Select assets to start a new basket.
         </p>
       </div>
 

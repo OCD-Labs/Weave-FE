@@ -6,14 +6,14 @@ const ERROR_MESSAGES: Record<string, string> = {
   // BasketFactory
   TooFewConstituents: "A basket needs at least 3 constituents.",
   TooManyConstituents: "Maximum number of constituents exceeded.",
-  ArrayLengthMismatch: "Constituent and weight arrays must be the same length.",
-  WeightSumInvalid: "Constituent weights must sum to exactly 100%.",
-  WeightTooLow: "Each constituent must have at least 1% weight.",
-  WeightTooHigh: "No single constituent can exceed 50% weight.",
-  AssetNotActive: "One or more constituents are not active in the catalogue.",
+  ArrayLengthMismatch: "Stock and weight arrays must be the same length.",
+  WeightSumInvalid: "Stock weights must sum to exactly 100%.",
+  WeightTooLow: "Each stock must have at least 1% weight.",
+  WeightTooHigh: "No single stock can exceed 50% weight.",
+  AssetNotActive: "One or more stocks are not active in the catalogue.",
   InitialDepositTooLow: "Initial deposit is below the minimum required.",
   InvalidDriftThreshold: "Drift threshold must be between 1 and 5000 bps (0.01%–50%).",
-  DuplicateConstituent: "Duplicate constituent found in basket composition.",
+  DuplicateConstituent: "Duplicate stock found in basket composition.",
   // BasketImplementation
   BasketSuspended: "This basket is suspended and cannot accept deposits or redemptions.",
   ProtocolPaused: "The protocol is temporarily paused. Please try again later.",
@@ -35,7 +35,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   InsufficientBalance: "Insufficient creator token balance for this burn amount.",
   // SwapRouter
   InsufficientLiquidity:
-    "Insufficient liquidity for this constituent. Please try a smaller deposit or try again later.",
+    "Insufficient liquidity for this stock. Please try a smaller deposit or try again later.",
   InsufficientOutput: "Swap output is below the minimum acceptable. Please try again.",
 };
 

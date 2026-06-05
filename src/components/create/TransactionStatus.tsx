@@ -99,7 +99,7 @@ export function TransactionStatus({ state }: { state: DeployState }) {
     >
       {row("Approve USDG spend", approval, state.approvalTx)}
       <hr className="divider" />
-      {row("Deploy basket", deployment, state.deployTx)}
+      {row("Create basket", deployment, state.deployTx)}
       <hr className="divider" />
       {row(
         phase === "success" ? "Confirmed — opening your basket" : "Confirm on chain",

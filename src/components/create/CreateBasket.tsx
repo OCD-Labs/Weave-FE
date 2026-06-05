@@ -34,7 +34,7 @@ interface Row {
   rationale: string;
 }
 
-const STEPS = ["Describe", "Review", "Configure", "Deploy"];
+const STEPS = ["Describe", "Review", "Configure", "Create"];
 
 // Example theses chosen to match the live catalogue (currently US mega-cap
 // tech/consumer names: AMD, AMZN, NFLX, PLTR, TSLA), so the AI can actually
@@ -51,15 +51,15 @@ const EXAMPLES = [
 function friendlyAiError(raw: string): string {
   const r = raw.toLowerCase();
   if (r.includes("too_small") || r.includes("at least 3")) {
-    return "The AI couldn't find enough matching assets for that description. Try a broader theme (the catalogue is focused on US tech and consumer names), or select the constituents yourself.";
+    return "The AI couldn't find enough matching assets for that description. Try a broader theme (the catalogue is focused on US tech and consumer names), or select the stocks yourself.";
   }
   if (r.includes("timeout") || r.includes("timed out")) {
-    return "The AI took too long to respond. Please try again, or select the constituents yourself.";
+    return "The AI took too long to respond. Please try again, or select the stocks yourself.";
   }
   if (r.includes("network")) {
     return "Couldn't reach the AI composer. Check your connection and try again.";
   }
-  return "The AI composer couldn't generate a basket from that description. Try rephrasing, or select the constituents yourself.";
+  return "The AI composer couldn't generate a basket from that description. Try rephrasing, or select the stocks yourself.";
 }
 
 export function CreateBasket() {
@@ -118,7 +118,7 @@ export function CreateBasket() {
   // On successful deploy, navigate to the new basket (or marketplace fallback).
   useEffect(() => {
     if (deployState.phase === "success") {
-      toast("Basket deployed — welcome to the marketplace", "success");
+      toast("Basket created — welcome to the marketplace", "success");
       const t = setTimeout(() => {
         router.push(
           deployState.basketAddress
@@ -200,14 +200,19 @@ export function CreateBasket() {
     });
     setShowCat(false);
   }
+  /** Split 100% evenly across ALL constituents. Each gets an equal whole-percent
+     share; any rounding remainder is added to the last so the total is exactly
+     10000 bps. */
   function distribute() {
     setRows((rs) => {
-      const zeros = rs!.filter((r) => r.weight === 0);
-      if (!zeros.length) return rs;
-      const remaining = 10000 - rs!.reduce((s, r) => s + r.weight, 0);
-      if (remaining <= 0) return rs;
-      const each = Math.floor(remaining / zeros.length / 100) * 100;
-      return rs!.map((r) => (r.weight === 0 ? { ...r, weight: each } : r));
+      if (!rs || rs.length === 0) return rs;
+      const n = rs.length;
+      const each = Math.floor(10000 / n / 100) * 100; // even whole-% share, in bps
+      const remainder = 10000 - each * n; // goes on the last constituent
+      return rs.map((r, i) => ({
+        ...r,
+        weight: i === n - 1 ? each + remainder : each,
+      }));
     });
   }
 
@@ -245,7 +250,7 @@ export function CreateBasket() {
   }
 
   return (
-    <div className="wrap reveal" style={{ paddingTop: 32, paddingBottom: 64, maxWidth: 920 }}>
+    <div className="wrap-wide reveal" style={{ paddingTop: 32, paddingBottom: 64 }}>
       <Stepper steps={STEPS} step={step} />
 
       {/* STEP 1 — Describe */}
@@ -256,8 +261,8 @@ export function CreateBasket() {
             className="muted"
             style={{ fontSize: 15.5, marginTop: 10, maxWidth: 640, lineHeight: 1.55 }}
           >
-            Give your basket a short description of its thesis. Then build the composition yourself, or let the AI propose one from your
-            description.
+            Give your basket a short description of its thesis. Then curate individual stocks
+            yourself, or let the AI propose stocks from your description.
           </p>
 
           <label className="eyebrow" htmlFor="basket-thesis" style={{ marginTop: 24, display: "block" }}>
@@ -281,9 +286,6 @@ export function CreateBasket() {
             </span>
           </div>
           <div style={{ marginTop: 14 }}>
-            <span className="muted" style={{ fontSize: 13 }}>
-              Examples:
-            </span>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
               {EXAMPLES.map((ex) => (
                 <button
@@ -328,7 +330,7 @@ export function CreateBasket() {
               </p>
               <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
                 <button type="button" className="btn btn-primary" onClick={startManual}>
-                  Select constituents →
+                  Select stocks →
                 </button>
                 <button type="button" className="btn btn-ghost" onClick={runAI}>
                   <SparkleIcon /> Retry AI
@@ -386,7 +388,7 @@ export function CreateBasket() {
                   disabled={!descOk}
                   onClick={startManual}
                 >
-                  Select constituents →
+                  Select stocks →
                 </button>
                 {/* Secondary path: AI proposal */}
                 <button
@@ -401,7 +403,7 @@ export function CreateBasket() {
               <p className="muted" style={{ fontSize: 12.5, marginTop: 10, lineHeight: 1.5 }}>
                 {descOk ? (
                   <>
-                    <strong style={{ color: "var(--ink-2)" }}>Select constituents</strong> — pick
+                    <strong style={{ color: "var(--ink-2)" }}>Select stocks</strong> — pick
                     assets from the catalogue and set weights.{" "}
                     <strong style={{ color: "var(--ink-2)" }}>Compose with AI</strong> — get a
                     proposed composition from your description to review and edit.
@@ -434,20 +436,20 @@ export function CreateBasket() {
                 <h2 style={{ fontSize: 20 }}>{aiMeta ? "Review the proposal" : "Build your composition"}</h2>
                 <p className="muted" style={{ fontSize: 13.5, marginTop: 3 }}>
                   {aiMeta
-                    ? "Remove, add, or reweight any constituent. Weights must total 100%."
-                    : "Add 3–20 constituents from the catalogue and set weights totalling 100%."}
+                    ? "Remove, add, or reweight any stock. Weights must total 100%."
+                    : "Add 3–20 stocks from the catalogue and set weights totalling 100%."}
                 </p>
               </div>
               <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                 <button type="button" className="btn btn-subtle btn-sm" onClick={distribute}>
-                  Distribute remaining
+                  Distribute evenly
                 </button>
                 <button
                   type="button"
                   className="btn btn-ghost btn-sm"
                   onClick={() => setShowCat(true)}
                 >
-                  + Add constituent
+                  + Add stock
                 </button>
               </div>
             </div>
@@ -467,7 +469,7 @@ export function CreateBasket() {
                     <tr>
                       <td colSpan={5} style={{ textAlign: "center", padding: "32px 16px" }}>
                         <p className="muted" style={{ fontSize: 14, marginBottom: 12 }}>
-                          No constituents yet. Add tokenized equities from the catalogue to build
+                          No stocks yet. Add tokenized stocks from the catalogue to build
                           your basket.
                         </p>
                         <button
@@ -475,7 +477,7 @@ export function CreateBasket() {
                           className="btn btn-primary btn-sm"
                           onClick={() => setShowCat(true)}
                         >
-                          + Add your first constituent
+                          + Add your first stock
                         </button>
                       </td>
                     </tr>
@@ -618,7 +620,7 @@ export function CreateBasket() {
             nextOk={reviewOk}
             nextHint={
               !countOk
-                ? "Need 3–20 constituents"
+                ? "Need 3–20 stocks"
                 : !boundsOk
                   ? "Each weight must be 1%–50%"
                   : !weightsOk
@@ -634,9 +636,7 @@ export function CreateBasket() {
         <div style={{ marginTop: 28 }}>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="card card-pad">
-              <label className="eyebrow" htmlFor="basket-name">
-                Basket name
-              </label>
+              <label className="eyebrow" htmlFor="basket-name">Basket name</label>
               <input
                 id="basket-name"
                 className="input"
@@ -767,7 +767,7 @@ export function CreateBasket() {
       {step === 4 && rows && (
         <div style={{ marginTop: 28 }}>
           <div className="card card-pad" style={{ padding: 30 }}>
-            <h2 style={{ fontSize: 22 }}>Review &amp; deploy</h2>
+            <h2 style={{ fontSize: 22 }}>Review &amp; create</h2>
             <p className="muted" style={{ fontSize: 14, marginTop: 4 }}>
               Confirm everything below. Deployment is two transactions: USDG approval, then basket
               creation.
@@ -775,7 +775,7 @@ export function CreateBasket() {
             <div className="mt-[22px] grid grid-cols-1 gap-x-[14px] sm:grid-cols-2">
               <SummaryRow k="Name" v={name} />
               <SummaryRow k="Symbol" v={symbol} mono />
-              <SummaryRow k="Constituents" v={`${rows.length} holdings`} />
+              <SummaryRow k="Stocks" v={`${rows.length} holdings`} />
               <SummaryRow
                 k="Rebalancing"
                 v={rebal ? `Auto · ${(drift / 100).toFixed(0)}% drift` : "Static"}
@@ -813,12 +813,12 @@ export function CreateBasket() {
               disabled={deploying}
             >
               {!connected
-                ? "Connect wallet to deploy"
+                ? "Connect wallet to create"
                 : deploying
-                  ? "Deploying…"
+                  ? "Creating…"
                   : deployState.phase === "error"
-                    ? "Retry deploy"
-                    : "Approve & deploy basket"}
+                    ? "Retry"
+                    : "Approve & create basket"}
             </button>
 
             {deployState.phase !== "idle" && <TransactionStatus state={deployState} />}
@@ -836,7 +836,7 @@ export function CreateBasket() {
       )}
 
       {showCat && (
-        <Modal title="Add a constituent" onClose={() => setShowCat(false)} wide>
+        <Modal title="Add a stock" onClose={() => setShowCat(false)} wide>
           <CatalogueTable
             onAdd={addAsset}
             selected={rows?.map((r) => r.address).filter(Boolean) ?? []}

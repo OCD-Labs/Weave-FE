@@ -6,7 +6,7 @@ const MESSAGES = [
   "Reading the Robinhood Chain catalogue…",
   "Cross-referencing sectors and market caps…",
   "Pulling live Chainlink prices…",
-  "Selecting constituents and setting weights…",
+  "Selecting stocks and setting weights…",
   "Writing the rationale…",
 ];
 

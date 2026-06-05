@@ -234,12 +234,27 @@
   }
 
   /* ---- App scaffold ---- */
+  /* Full-height column so the footer is pushed to the viewport bottom on short
+     pages; the routed screen (the middle child) grows to fill the space. */
+  .app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .app > :not(.nav):not(footer) {
+    flex: 1 0 auto;
+  }
   .wrap {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 32px;
   }
   .wrap-wide {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+  .create-w {
     max-width: 1320px;
     margin: 0 auto;
     padding: 0 32px;
@@ -470,11 +485,13 @@
     display: inline-flex;
     align-items: center;
     height: 22px;
-    padding: 0 9px;
+    padding: 0 10px;
     border-radius: 999px;
     font-size: 11.5px;
     font-weight: 650;
     letter-spacing: 0.01em;
+    white-space: nowrap;
+    line-height: 1;
   }
 
   /* ---- Inputs ---- */
@@ -772,6 +789,11 @@
   .modal-body {
     padding: 22px;
     overflow-y: auto;
+    /* min-height:0 lets this flex child shrink below its content height so it
+       actually scrolls instead of overflowing the panel on short screens. */
+    min-height: 0;
+    flex: 1 1 auto;
+    -webkit-overflow-scrolling: touch;
   }
   @media (max-width: 640px) {
     .modal-overlay {
@@ -785,6 +807,449 @@
       max-height: 92vh;
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
+    }
+  }
+
+  /* ============ Landing page ============ */
+  .land-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    color: var(--accent);
+    opacity: 0.1;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .land-backdrop.subtle {
+    color: var(--on-accent);
+    opacity: 0.16;
+  }
+
+  /* hero */
+  .land-hero {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: 48px;
+    align-items: center;
+    padding-top: 64px;
+    padding-bottom: 72px;
+  }
+  .land-hero-copy {
+    max-width: 600px;
+  }
+  .land-h1 {
+    font-size: 56px;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+  }
+  .land-sub {
+    font-size: 19px;
+    color: var(--muted);
+    margin-top: 20px;
+    line-height: 1.55;
+    max-width: 540px;
+  }
+  .land-cta {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+  }
+  .land-hero-stats {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+  .land-stat-n {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+  .land-stat-l {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .land-stat-div {
+    width: 1px;
+    height: 38px;
+    background: var(--line);
+  }
+
+  /* hero art */
+  .land-hero-art {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+  }
+  .land-art-stack {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+  }
+  .land-art-card {
+    padding: 22px;
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .land-art-card:hover {
+    transform: translateY(-4px);
+  }
+  .land-art-chip {
+    position: absolute;
+    box-shadow: var(--shadow-lg);
+  }
+  .land-art-chip-1 {
+    padding: 12px;
+    bottom: -28px;
+    left: -40px;
+  }
+  .land-art-chip-2 {
+    right: -34px;
+    bottom: 84px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .land-chip-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: var(--accent-tint);
+    color: var(--accent-strong);
+    display: grid;
+    place-items: center;
+  }
+
+  /* trust strip */
+  .land-trust {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 22px 0 8px;
+    border-top: 1px solid var(--line);
+  }
+  .land-trust-label {
+    font-size: 13px;
+    color: var(--muted-2);
+    font-weight: 600;
+  }
+  .land-trust-sectors {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* sections */
+  .land-section {
+    padding-top: 72px;
+  }
+  .land-section-head-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 32px;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .land-h2 {
+    font-size: 36px;
+    letter-spacing: -0.035em;
+    line-height: 1.08;
+  }
+
+  /* steps */
+  .land-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--gap);
+  }
+  .land-step {
+    display: flex;
+    flex-direction: column;
+  }
+  .land-step-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .land-step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: var(--accent-tint);
+    color: var(--accent-strong);
+    display: grid;
+    place-items: center;
+  }
+  .land-step-num {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--line);
+    letter-spacing: -0.03em;
+  }
+
+  /* AI feature band */
+  .land-feature-band {
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-top: 72px;
+  }
+  .land-feature {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+    align-items: center;
+    padding: 72px 0;
+  }
+  .land-checks {
+    list-style: none;
+    padding: 0;
+    margin: 24px 0 0;
+    display: grid;
+    gap: 12px;
+  }
+  .land-checks li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14.5px;
+    font-weight: 550;
+  }
+
+  /* AI mock */
+  .land-ai-mock {
+    padding: 22px;
+    box-shadow: var(--shadow-md);
+  }
+  .land-ai-prompt {
+    background: var(--accent-tint);
+    border-radius: var(--r-sm);
+    padding: 14px 16px;
+  }
+  .land-ai-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent-strong);
+  }
+  .land-ai-prompt p {
+    font-size: 14.5px;
+    margin-top: 6px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .land-ai-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    font-weight: 650;
+    color: var(--accent-strong);
+    margin: 14px 0 4px;
+  }
+  .land-ai-rows {
+    display: grid;
+    gap: 8px;
+  }
+  .land-ai-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: fadeUp 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  }
+  .land-ai-name {
+    font-size: 13px;
+    font-weight: 600;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .land-ai-bar {
+    width: 70px;
+    height: 6px;
+    background: var(--surface-2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .land-ai-bar > div {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+  }
+  .land-ai-w {
+    font-size: 13px;
+    font-weight: 700;
+    min-width: 34px;
+    text-align: right;
+  }
+
+  /* featured + pillars */
+  .land-featured {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--gap);
+  }
+  .land-pillars {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--gap);
+  }
+  .land-pillar {
+    display: flex;
+    flex-direction: column;
+  }
+  .land-pillar-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--accent-tint);
+    color: var(--accent-strong);
+    display: grid;
+    place-items: center;
+  }
+  .land-pillar-stat {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line-2);
+  }
+  .land-pillar-stat .num {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent-strong);
+  }
+  .land-pillar-stat .muted {
+    font-size: 13px;
+  }
+  .land-rebal-demo {
+    display: flex;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line-2);
+  }
+
+  /* creator CTA */
+  .land-creator {
+    position: relative;
+    overflow: hidden;
+    background: var(--accent-strong);
+    border: none;
+  }
+  .land-creator-inner {
+    position: relative;
+    padding: 56px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+  }
+  .land-creator-art {
+    position: relative;
+    z-index: 1;
+    flex: none;
+  }
+  .land-earn-card {
+    padding: 22px;
+    width: 280px;
+    box-shadow: var(--shadow-lg);
+  }
+  .land-earn-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    height: 64px;
+    margin-top: 16px;
+  }
+  .land-earn-bars > div {
+    flex: 1;
+    border-radius: 3px 3px 0 0;
+    min-height: 4px;
+  }
+
+  /* landing responsive */
+  @media (max-width: 1080px) {
+    .land-h1 {
+      font-size: 46px;
+    }
+    .land-steps {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 900px) {
+    .land-hero {
+      grid-template-columns: 1fr;
+      gap: 48px;
+      padding-top: 44px;
+    }
+    .land-hero-art {
+      justify-content: flex-start;
+      padding-left: 40px;
+    }
+    .land-feature {
+      grid-template-columns: 1fr;
+      gap: 36px;
+      padding: 56px 0;
+    }
+    .land-featured {
+      grid-template-columns: 1fr 1fr;
+    }
+    .land-pillars {
+      grid-template-columns: 1fr;
+    }
+    .land-creator-inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .land-earn-card {
+      width: 100%;
+      max-width: 320px;
+    }
+  }
+  @media (max-width: 620px) {
+    .land-h1 {
+      font-size: 34px;
+    }
+    .land-sub {
+      font-size: 16px;
+    }
+    .land-hero-stats {
+      gap: 16px;
+    }
+    .land-stat-n {
+      font-size: 22px;
+    }
+    .land-section {
+      padding-top: 52px;
+    }
+    .land-h2 {
+      font-size: 28px;
+    }
+    .land-steps,
+    .land-featured {
+      grid-template-columns: 1fr;
+    }
+    .land-creator-inner {
+      padding: 36px 24px;
+    }
+    .land-art-chip-1 {
+      left: 0;
+    }
+    .land-art-chip-2 {
+      right: 0;
     }
   }
 }

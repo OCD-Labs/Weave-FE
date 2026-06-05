@@ -8,7 +8,8 @@ import { WalletIcon, ChevronIcon, MenuIcon } from "./icons";
 import { useWallet } from "./wallet/WalletProvider";
 
 const LINKS = [
-  { label: "Markets", href: "/" },
+  { label: "Home", href: "/" },
+  { label: "Markets", href: "/markets" },
   { label: "Create", href: "/create" },
   // { label: "Portfolio", href: "/portfolio" },
   // { label: "Creator", href: "/creator" },
@@ -16,7 +17,8 @@ const LINKS = [
 ] as const;
 
 function isActive(pathname: string, href: string): boolean {
-  if (href === "/") return pathname === "/" || pathname.startsWith("/baskets");
+  // Markets stays active on the basket detail pages too.
+  if (href === "/markets") return pathname.startsWith("/markets") || pathname.startsWith("/baskets");
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -27,12 +29,12 @@ export function Nav() {
   return (
     <header className="nav">
       <div className="wrap-wide nav-inner">
-        <Link href="/" className="brand">
+        <Link href="/" className="brand sm:mr-24">
           <BrandMark size={40} />
           <span className="brand-name">Weave</span>
         </Link>
 
-        <nav className="nav-links" style={{ display: "none" }} data-desktop-nav>
+        <nav className="nav-links sm:space-x-5" style={{ display: "none" }} data-desktop-nav>
           {LINKS.map((l) => (
             <Link
               key={l.href}

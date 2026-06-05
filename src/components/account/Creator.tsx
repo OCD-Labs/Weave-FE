@@ -127,9 +127,7 @@ function EmptyCreator() {
       <p className="muted" style={{ marginTop: 8, fontSize: 14 }}>
         Create a basket to start earning a continuous share of its management-fee revenue.
       </p>
-      <Link href="/create" className="btn btn-primary" style={{ marginTop: 18 }}>
-        Create a basket
-      </Link>
+      <Link href="/create" className="btn btn-primary" style={{ marginTop: 18 }}>Create a basket</Link>
     </div>
   );
 }

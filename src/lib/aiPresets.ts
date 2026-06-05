@@ -190,8 +190,8 @@ const DEFAULT_PRESET: AIPreset = {
     },
   ],
   overall:
-    "A balanced starting composition across the core names that fit your thesis. Review each constituent and adjust weights to match your conviction before deploying.",
-  risk: "A generated starting point — refine the constituents and weights to reflect your specific view. Concentrated baskets carry single-stock risk.",
+    "A balanced starting composition across the core names that fit your thesis. Review each stock and adjust weights to match your conviction before deploying.",
+  risk: "A generated starting point — refine the stocks and weights to reflect your specific view. Concentrated baskets carry single-stock risk.",
 };
 
 /** Pick the closest preset for a thesis. Multi-word/hyphenated keys match as

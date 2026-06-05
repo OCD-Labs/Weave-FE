@@ -18,11 +18,11 @@ export function Footer() {
           <BrandMark size={24} />
           <span style={{ fontWeight: 700 }}>Weave</span>
           <span className="muted" style={{ fontSize: 13 }}>
-            · Onchain index protocol for tokenized equities
+            · Onchain basket protocol for tokenized equities
           </span>
         </div>
         <div className="muted" style={{ fontSize: 12.5 }}>
-          Built on Robinhood Chain · Prototype — not financial advice
+          Built on Robinhood Chain · © {new Date().getFullYear()} Weave.
         </div>
       </div>
     </footer>

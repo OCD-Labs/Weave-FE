@@ -101,7 +101,7 @@ function NotFound() {
       <p className="muted" style={{ marginTop: 10, fontSize: 15 }}>
         This basket doesn&apos;t exist or hasn&apos;t been indexed yet.
       </p>
-      <Link href="/" className="btn btn-primary" style={{ marginTop: 20 }}>
+      <Link href="/markets" className="btn btn-primary" style={{ marginTop: 20 }}>
         Back to Markets
       </Link>
     </div>

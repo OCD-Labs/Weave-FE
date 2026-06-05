@@ -1,17 +1,35 @@
+"use client";
+
+import { useMemo } from "react";
 import Link from "next/link";
 import type { UiBasketSummary } from "@/lib/api/map";
+import { usePerformance } from "@/lib/api/hooks";
 import { fmtUsdCompact, fmtPct } from "@/lib/format";
+import { fromUnits } from "@/lib/units";
 import { RebalBadge } from "../badges";
+import { Spark } from "../Spark";
 
 function shortAddr(a: string): string {
   return `${a.slice(0, 6)}…${a.slice(-4)}`;
 }
 
 /** Marketplace card backed by the live GET /baskets summary, which now includes
-   24h NAV change and inline constituents. */
+   24h NAV change and inline constituents. A sparkline is layered on from the
+   per-basket performance history. */
 export function LiveBasketCard({ basket }: { basket: UiBasketSummary }) {
   const up = basket.navChg24 >= 0;
   const extra = basket.constituentCount - 5;
+
+  // Sparkline from the last ~30 NAV points (API navPerToken is 6-decimal).
+  const { data: perf } = usePerformance(basket.address);
+  const sparkData = useMemo(
+    () =>
+      (perf ?? []).slice(-30).map((p) => ({
+        t: p.timestamp * 1000,
+        nav: fromUnits(p.navPerToken, 6),
+      })),
+    [perf]
+  );
 
   return (
     <Link
@@ -31,11 +49,13 @@ export function LiveBasketCard({ basket }: { basket: UiBasketSummary }) {
               by {shortAddr(basket.creator)}
             </div>
           </div>
-          {basket.suspended && (
+          {basket.suspended ? (
             <span className="badge badge-warn">
               <span className="dot" /> Suspended
             </span>
-          )}
+          ) : sparkData.length > 1 ? (
+            <Spark data={sparkData} up={up} />
+          ) : null}
         </div>
         <p
           className="muted line-clamp-2"

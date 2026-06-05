@@ -7,7 +7,7 @@ import { fmtUsd, fmtUsdCompact, fmtPct, fmtNum, bps, ago } from "@/lib/format";
 import { explorerTx } from "@/lib/web3/addresses";
 import { Segmented } from "../controls";
 import { RebalBadge, ChangeBadge, SectorPill } from "../badges";
-import { SpinIcon } from "../icons";
+import { SpinIcon, CopyIcon, CheckIcon } from "../icons";
 import { NavChart } from "../charts/NavChart";
 import { DonutChart } from "../charts/DonutChart";
 import { DriftIndicator } from "./DriftIndicator";
@@ -29,6 +29,54 @@ function shortLabel(s: string): string {
   return /^0x[0-9a-fA-F]{40,64}$/.test(s) ? `${s.slice(0, 6)}…${s.slice(-4)}` : s;
 }
 const creatorLabel = shortLabel;
+
+/** Inline address with a copy button that flips to a check for ~1.4s. */
+function CopyField({
+  label,
+  value,
+  display,
+  accent,
+}: {
+  label: string;
+  value: string;
+  display: string;
+  accent?: boolean;
+}) {
+  const [copied, setCopied] = useState(false);
+  const onCopy = () => {
+    navigator.clipboard?.writeText(value).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1400);
+    });
+  };
+  return (
+    <span className="muted" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+      {label}{" "}
+      <span
+        className="mono"
+        style={{ color: accent ? "var(--accent-strong)" : "var(--ink-2)", fontWeight: 600 }}
+      >
+        {display}
+      </span>
+      <button
+        type="button"
+        onClick={onCopy}
+        aria-label={copied ? `${label} copied` : `Copy ${label}`}
+        title={copied ? "Copied" : "Copy"}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          lineHeight: 0,
+          padding: 2,
+          color: copied ? "var(--accent-strong)" : "var(--muted-2)",
+          cursor: "pointer",
+        }}
+      >
+        {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
+      </button>
+    </span>
+  );
+}
 
 function MiniStat({ label, value, cls }: { label: string; value: string; cls?: string }) {
   return (
@@ -56,7 +104,7 @@ export function BasketDetail({ basket }: { basket: UiBasketDetail }) {
       <div
         style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18, fontSize: 13 }}
       >
-        <Link href="/" className="muted" style={{ fontWeight: 600 }}>
+        <Link href="/markets" className="muted" style={{ fontWeight: 600 }}>
           Markets
         </Link>
         <span className="muted">/</span>
@@ -106,13 +154,17 @@ export function BasketDetail({ basket }: { basket: UiBasketDetail }) {
             {basket.thesis}
           </p>
           <div style={{ display: "flex", gap: 18, marginTop: 14, fontSize: 13, flexWrap: "wrap" }}>
-            <span className="muted">
-              Created by{" "}
-              <span className="mono" style={{ color: "var(--accent-strong)", fontWeight: 600 }}>
-                {creatorLabel(basket.creator)}
-              </span>
-            </span>
-            <span className="muted mono">{shortLabel(basket.address)}</span>
+            <CopyField
+              label="Created by"
+              value={basket.creator}
+              display={creatorLabel(basket.creator)}
+              accent
+            />
+            <CopyField
+              label="Basket address"
+              value={basket.address}
+              display={shortLabel(basket.address)}
+            />
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
