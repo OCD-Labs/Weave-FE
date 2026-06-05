@@ -22,7 +22,7 @@ export function Footer() {
           </span>
         </div>
         <div className="muted" style={{ fontSize: 12.5 }}>
-          Built on Robinhood Chain · Prototype — not financial advice
+          Built on Robinhood Chain · © {new Date().getFullYear()} Weave.
         </div>
       </div>
     </footer>

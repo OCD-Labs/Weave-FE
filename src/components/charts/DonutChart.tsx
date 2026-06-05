@@ -8,9 +8,7 @@ interface DonutChartProps {
   slices: Constituent[];
   size?: number;
   thickness?: number;
-  /** Use target weights instead of current (drifted) weights. */
   useTarget?: boolean;
-  /** Highlighted slice index (controlled from a parent for list↔donut sync). */
   active?: number | null;
   onHover?: (i: number | null) => void;
 }
