@@ -8,7 +8,7 @@ import { BASKETS } from "@/lib/data";
 import type { Basket } from "@/lib/types";
 import { useDataSource } from "@/lib/dataSource";
 import { fmtUsdCompact } from "@/lib/format";
-import { SpinIcon, SearchIcon } from "../icons";
+import { SearchIcon } from "../icons";
 import { Stat } from "../Stat";
 import { Segmented, Select } from "../controls";
 import { LiveBasketCard } from "./LiveBasketCard";
@@ -97,43 +97,22 @@ export function Marketplace() {
 
   return (
     <div className="reveal">
-      {/* Hero */}
-      <div className="wrap-wide" style={{ paddingTop: 52, paddingBottom: 36 }}>
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div style={{ maxWidth: 640 }}>
-            <span className="badge badge-accent" style={{ marginBottom: 16 }}>
-              <SpinIcon /> Onchain index protocol
-            </span>
-            <h1
-              className="text-[34px] leading-[1.05] sm:text-[46px] sm:leading-[1.04]"
-              style={{ letterSpacing: "-0.035em" }}
-            >
-              Any investment thesis,
-              <br />
-              as one investable token.
-            </h1>
-            <p
-              className="muted"
-              style={{ fontSize: 17, marginTop: 16, lineHeight: 1.55, maxWidth: 560 }}
-            >
-              Compose a thematic index of tokenized stocks, publish it onchain, and earn a
-              continuous share of its revenue for as long as investors hold it.
-            </p>
-            <div style={{ display: "flex", gap: 12, marginTop: 26, flexWrap: "wrap" }}>
-              <Link href="/create" className="btn btn-primary btn-lg">
-                Create an index
-              </Link>
-              <a href="#mkt-list" className="btn btn-ghost btn-lg">
-                Browse markets
-              </a>
-            </div>
+      {/* Hero — stat band + primary CTA */}
+      <div className="wrap-wide" style={{ paddingTop: 44, paddingBottom: 32 }}>
+        <div className="flex flex-col gap-[var(--gap)] lg:flex-row lg:items-stretch lg:justify-between">
+          <div className="grid w-full flex-1 grid-cols-2 gap-[var(--gap)] sm:grid-cols-4">
+            <Stat big label="Total value woven" value={fmtUsdCompact(totalAum)} />
+            <Stat big label="Live baskets" value={summaries.length} />
+            <Stat big label="Protocol fee" value="0.50%" sub="80% to creators" />
+            <Stat big label="Rebalancing" value="Onchain" sub="via Chainlink" />
           </div>
-          <div className="grid grid-cols-2 gap-3.5" style={{ minWidth: 280 }}>
-            <Stat label="Total value woven" value={fmtUsdCompact(totalAum)} />
-            <Stat label="Live indexes" value={summaries.length} />
-            <Stat label="Protocol fee" value="0.50%" sub="80% to creators" />
-            <Stat label="Rebalancing" value="Onchain" sub="via Chainlink" />
-          </div>
+          <Link
+            href="/create"
+            className="btn btn-primary btn-lg"
+            style={{ whiteSpace: "nowrap", flex: "none" }}
+          >
+            Create a basket
+          </Link>
         </div>
       </div>
 
@@ -166,10 +145,10 @@ export function Marketplace() {
             <input
               className="input"
               style={{ paddingLeft: 38, height: 40 }}
-              placeholder="Search indexes by name or thesis"
+              placeholder="Search baskets by name or thesis"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              aria-label="Search indexes by name or thesis"
+              aria-label="Search baskets by name or thesis"
             />
           </div>
           <Segmented
@@ -247,7 +226,7 @@ export function Marketplace() {
         ) : isError ? (
           <div className="card card-pad mt-2 text-center">
             <div className="down" style={{ fontWeight: 700, fontSize: 16 }}>
-              Couldn&apos;t load indexes
+              Couldn&apos;t load baskets
             </div>
             <p className="muted" style={{ marginTop: 6, fontSize: 14 }}>
               {error instanceof Error ? error.message : "Please try again."}
