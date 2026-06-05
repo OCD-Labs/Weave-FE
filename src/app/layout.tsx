@@ -24,7 +24,7 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Weave — Onchain index protocol",
   description:
-    "Compose a thematic basket of tokenized equities, publish it onchain, and earn a continuous share of its revenue for as long as investors hold it.",
+    "Compose a thematic index of tokenized stocks, publish it onchain, and earn a continuous share of its revenue for as long as investors hold it.",
 };
 
 export default function RootLayout({
