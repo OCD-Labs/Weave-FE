@@ -183,3 +183,18 @@ export function CheckIcon({ size = 18 }: { size?: number }) {
     </svg>
   );
 }
+
+export function CopyIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="9" y="9" width="11" height="11" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M5 15V6.5A1.5 1.5 0 0 1 6.5 5H15"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

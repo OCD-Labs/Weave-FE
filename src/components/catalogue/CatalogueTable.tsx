@@ -23,7 +23,7 @@ interface CatalogueTableProps {
 }
 
 /** Searchable, sector-filterable catalogue of tokenized equities, backed by
-   GET /catalogue. Shared by the Create wizard's "Add constituent" modal and
+   GET /catalogue. Shared by the Create wizard's "Add stock" modal and
    the standalone /catalogue page. */
 export function CatalogueTable({
   onAdd,

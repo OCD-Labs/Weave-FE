@@ -51,15 +51,15 @@ const EXAMPLES = [
 function friendlyAiError(raw: string): string {
   const r = raw.toLowerCase();
   if (r.includes("too_small") || r.includes("at least 3")) {
-    return "The AI couldn't find enough matching assets for that description. Try a broader theme (the catalogue is focused on US tech and consumer names), or select the constituents yourself.";
+    return "The AI couldn't find enough matching assets for that description. Try a broader theme (the catalogue is focused on US tech and consumer names), or select the stocks yourself.";
   }
   if (r.includes("timeout") || r.includes("timed out")) {
-    return "The AI took too long to respond. Please try again, or select the constituents yourself.";
+    return "The AI took too long to respond. Please try again, or select the stocks yourself.";
   }
   if (r.includes("network")) {
     return "Couldn't reach the AI composer. Check your connection and try again.";
   }
-  return "The AI composer couldn't generate an index from that description. Try rephrasing, or select the constituents yourself.";
+  return "The AI composer couldn't generate a basket from that description. Try rephrasing, or select the stocks yourself.";
 }
 
 export function CreateBasket() {
@@ -118,7 +118,7 @@ export function CreateBasket() {
   // On successful deploy, navigate to the new basket (or marketplace fallback).
   useEffect(() => {
     if (deployState.phase === "success") {
-      toast("Index created — welcome to the marketplace", "success");
+      toast("Basket created — welcome to the marketplace", "success");
       const t = setTimeout(() => {
         router.push(
           deployState.basketAddress
@@ -182,7 +182,7 @@ export function CreateBasket() {
   function addAsset(asset: UiCatalogueAsset) {
     setRows((rs) => {
       if (rs!.some((r) => r.sym === asset.sym)) {
-        toast(`${asset.sym} is already in the index`, "error");
+        toast(`${asset.sym} is already in the basket`, "error");
         return rs;
       }
       return [
@@ -250,18 +250,18 @@ export function CreateBasket() {
   }
 
   return (
-    <div className="wrap reveal" style={{ paddingTop: 32, paddingBottom: 64, maxWidth: 920 }}>
+    <div className="wrap-wide reveal" style={{ paddingTop: 32, paddingBottom: 64 }}>
       <Stepper steps={STEPS} step={step} />
 
       {/* STEP 1 — Describe */}
       {step === 1 && (
         <div className="card card-pad" style={{ padding: 36, marginTop: 28 }}>
-          <h1 style={{ fontSize: 30, letterSpacing: "-0.03em" }}>Describe your index</h1>
+          <h1 style={{ fontSize: 30, letterSpacing: "-0.03em" }}>Describe your basket</h1>
           <p
             className="muted"
             style={{ fontSize: 15.5, marginTop: 10, maxWidth: 640, lineHeight: 1.55 }}
           >
-            Give your index a short description of its thesis. Then curate individual stocks
+            Give your basket a short description of its thesis. Then curate individual stocks
             yourself, or let the AI propose stocks from your description.
           </p>
 
@@ -330,7 +330,7 @@ export function CreateBasket() {
               </p>
               <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
                 <button type="button" className="btn btn-primary" onClick={startManual}>
-                  Select constituents →
+                  Select stocks →
                 </button>
                 <button type="button" className="btn btn-ghost" onClick={runAI}>
                   <SparkleIcon /> Retry AI
@@ -388,7 +388,7 @@ export function CreateBasket() {
                   disabled={!descOk}
                   onClick={startManual}
                 >
-                  Select constituents →
+                  Select stocks →
                 </button>
                 {/* Secondary path: AI proposal */}
                 <button
@@ -403,7 +403,7 @@ export function CreateBasket() {
               <p className="muted" style={{ fontSize: 12.5, marginTop: 10, lineHeight: 1.5 }}>
                 {descOk ? (
                   <>
-                    <strong style={{ color: "var(--ink-2)" }}>Select constituents</strong> — pick
+                    <strong style={{ color: "var(--ink-2)" }}>Select stocks</strong> — pick
                     assets from the catalogue and set weights.{" "}
                     <strong style={{ color: "var(--ink-2)" }}>Compose with AI</strong> — get a
                     proposed composition from your description to review and edit.
@@ -436,8 +436,8 @@ export function CreateBasket() {
                 <h2 style={{ fontSize: 20 }}>{aiMeta ? "Review the proposal" : "Build your composition"}</h2>
                 <p className="muted" style={{ fontSize: 13.5, marginTop: 3 }}>
                   {aiMeta
-                    ? "Remove, add, or reweight any constituent. Weights must total 100%."
-                    : "Add 3–20 constituents from the catalogue and set weights totalling 100%."}
+                    ? "Remove, add, or reweight any stock. Weights must total 100%."
+                    : "Add 3–20 stocks from the catalogue and set weights totalling 100%."}
                 </p>
               </div>
               <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -449,7 +449,7 @@ export function CreateBasket() {
                   className="btn btn-ghost btn-sm"
                   onClick={() => setShowCat(true)}
                 >
-                  + Add constituent
+                  + Add stock
                 </button>
               </div>
             </div>
@@ -469,15 +469,15 @@ export function CreateBasket() {
                     <tr>
                       <td colSpan={5} style={{ textAlign: "center", padding: "32px 16px" }}>
                         <p className="muted" style={{ fontSize: 14, marginBottom: 12 }}>
-                          No constituents yet. Add tokenized stocks from the catalogue to build
-                          your index.
+                          No stocks yet. Add tokenized stocks from the catalogue to build
+                          your basket.
                         </p>
                         <button
                           type="button"
                           className="btn btn-primary btn-sm"
                           onClick={() => setShowCat(true)}
                         >
-                          + Add your first constituent
+                          + Add your first stock
                         </button>
                       </td>
                     </tr>
@@ -620,7 +620,7 @@ export function CreateBasket() {
             nextOk={reviewOk}
             nextHint={
               !countOk
-                ? "Need 3–20 constituents"
+                ? "Need 3–20 stocks"
                 : !boundsOk
                   ? "Each weight must be 1%–50%"
                   : !weightsOk
@@ -636,7 +636,7 @@ export function CreateBasket() {
         <div style={{ marginTop: 28 }}>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="card card-pad">
-              <label className="eyebrow" htmlFor="basket-name">Index name</label>
+              <label className="eyebrow" htmlFor="basket-name">Basket name</label>
               <input
                 id="basket-name"
                 className="input"
@@ -687,7 +687,7 @@ export function CreateBasket() {
                 </span>
               </div>
               <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
-                Minimum {fmtUsd(registry.minFirstDepositUsd)}. You seed the index from your own
+                Minimum {fmtUsd(registry.minFirstDepositUsd)}. You seed the basket from your own
                 wallet at deployment.
               </p>
             </div>
@@ -728,7 +728,7 @@ export function CreateBasket() {
                   />
                   <p className="muted" style={{ fontSize: 12, marginTop: 6, lineHeight: 1.5 }}>
                     When any holding deviates from its target by {(drift / 100).toFixed(0)}%, the
-                    index trades to restore proportions — funded from fee revenue via Chainlink
+                    basket trades to restore proportions — funded from fee revenue via Chainlink
                     Automation.
                   </p>
                 </div>
@@ -748,7 +748,7 @@ export function CreateBasket() {
                   A {(registry.managementFeeBps / 100).toFixed(2)}% fee is charged on each deposit
                   and redemption.{" "}
                   <strong>{(registry.creatorShareBps / 100).toFixed(0)}% flows to you</strong> as the
-                  creator — continuously, for the life of the index — and{" "}
+                  creator — continuously, for the life of the basket — and{" "}
                   {(registry.protocolShareBps / 100).toFixed(0)}% to the protocol treasury.
                 </p>
               </div>
@@ -769,13 +769,13 @@ export function CreateBasket() {
           <div className="card card-pad" style={{ padding: 30 }}>
             <h2 style={{ fontSize: 22 }}>Review &amp; create</h2>
             <p className="muted" style={{ fontSize: 14, marginTop: 4 }}>
-              Confirm everything below. Deployment is two transactions: USDG approval, then index
+              Confirm everything below. Deployment is two transactions: USDG approval, then basket
               creation.
             </p>
             <div className="mt-[22px] grid grid-cols-1 gap-x-[14px] sm:grid-cols-2">
               <SummaryRow k="Name" v={name} />
               <SummaryRow k="Symbol" v={symbol} mono />
-              <SummaryRow k="Constituents" v={`${rows.length} holdings`} />
+              <SummaryRow k="Stocks" v={`${rows.length} holdings`} />
               <SummaryRow
                 k="Rebalancing"
                 v={rebal ? `Auto · ${(drift / 100).toFixed(0)}% drift` : "Static"}
@@ -818,7 +818,7 @@ export function CreateBasket() {
                   ? "Creating…"
                   : deployState.phase === "error"
                     ? "Retry"
-                    : "Approve & create index"}
+                    : "Approve & create basket"}
             </button>
 
             {deployState.phase !== "idle" && <TransactionStatus state={deployState} />}
@@ -836,7 +836,7 @@ export function CreateBasket() {
       )}
 
       {showCat && (
-        <Modal title="Add a constituent" onClose={() => setShowCat(false)} wide>
+        <Modal title="Add a stock" onClose={() => setShowCat(false)} wide>
           <CatalogueTable
             onAdd={addAsset}
             selected={rows?.map((r) => r.address).filter(Boolean) ?? []}

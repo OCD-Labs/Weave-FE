@@ -254,6 +254,11 @@
     margin: 0 auto;
     padding: 0 32px;
   }
+  .create-w {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
   @media (max-width: 640px) {
     .wrap,
     .wrap-wide {
@@ -480,11 +485,13 @@
     display: inline-flex;
     align-items: center;
     height: 22px;
-    padding: 0 9px;
+    padding: 0 10px;
     border-radius: 999px;
     font-size: 11.5px;
     font-weight: 650;
     letter-spacing: 0.01em;
+    white-space: nowrap;
+    line-height: 1;
   }
 
   /* ---- Inputs ---- */
