@@ -168,7 +168,7 @@ export function TradePanel({ basket }: { basket: UiBasketDetail }) {
             value={amt}
             onChange={(e) => setAmt(e.target.value.replace(/[^0-9.]/g, ""))}
             inputMode="decimal"
-            aria-label={isDep ? "USDG amount to deposit" : "Index tokens to redeem"}
+            aria-label={isDep ? "USDG amount to deposit" : "Basket tokens to redeem"}
           />
           <div
             style={{
@@ -275,7 +275,7 @@ export function TradePanel({ basket }: { basket: UiBasketDetail }) {
         >
           {isDep
             ? "Two steps: approve USDG, then deposit. Priced by Chainlink at execution."
-            : "Burns your index tokens and returns USDG at current NAV."}
+            : "Burns your basket tokens and returns USDG at current NAV."}
         </p>
       </div>
     </div>

@@ -68,7 +68,7 @@ export function Portfolio() {
     return (
       <ConnectGate
         title="Connect to view your portfolio"
-        sub="See every index position you hold, your cost basis, and unrealised performance across the protocol."
+        sub="See every basket position you hold, your cost basis, and unrealised performance across the protocol."
       />
     );
   }
@@ -177,7 +177,7 @@ export function Portfolio() {
                     background: "var(--surface)",
                   }}
                 >
-                  <Link href={`/baskets/${p.slug}`} className="btn btn-ghost btn-sm" style={{ flex: 1 }}>View index</Link>
+                  <Link href={`/baskets/${p.slug}`} className="btn btn-ghost btn-sm" style={{ flex: 1 }}>View basket</Link>
                   <button
                     type="button"
                     className="btn btn-subtle btn-sm"
@@ -204,9 +204,9 @@ function EmptyPortfolio() {
     <div className="card card-pad" style={{ textAlign: "center", padding: "56px 24px" }}>
       <h2 style={{ fontSize: 20 }}>No positions yet</h2>
       <p className="muted" style={{ marginTop: 8, fontSize: 14 }}>
-        Deposit into an index and it will show up here with your cost basis and live performance.
+        Deposit into a basket and it will show up here with your cost basis and live performance.
       </p>
-      <Link href="/markets" className="btn btn-primary" style={{ marginTop: 18 }}>Browse indexes</Link>
+      <Link href="/markets" className="btn btn-primary" style={{ marginTop: 18 }}>Browse baskets</Link>
     </div>
   );
 }

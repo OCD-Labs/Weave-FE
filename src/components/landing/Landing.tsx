@@ -30,26 +30,26 @@ const HOW_IT_WORKS = [
   },
   {
     n: "02",
-    t: "AI composes the index",
-    d: "The agent reads the full catalogue, picks constituents, sets weights, and writes a rationale for every holding. You adjust anything.",
+    t: "AI composes the basket",
+    d: "The agent reads the full catalogue, picks stocks, sets weights, and writes a rationale for every holding. You adjust anything.",
     icon: <GridIcon />,
   },
   {
     n: "03",
     t: "Publish onchain",
-    d: "Deploy as a single ERC-20. Investors deposit USDG and receive your index token, priced live by Chainlink.",
+    d: "Deploy as a single ERC-20. Investors deposit USDG and receive your basket token, priced live by Chainlink.",
     icon: <ChainIcon />,
   },
   {
     n: "04",
     t: "Earn continuously",
-    d: "Collect 80% of the 0.50% management fee for the life of the index, via ERC-7641 revenue sharing.",
+    d: "Collect 80% of the 0.50% management fee for the life of the basket, via ERC-7641 revenue sharing.",
     icon: <CoinIcon />,
   },
 ];
 
 const AI_CHECKS = [
-  "Constituent selection with per-stock rationale",
+  "Hand-picked stocks with a rationale for each",
   "Auto-balanced weights that sum to 100%",
   "Built-in risk notes and concentration caps",
   "Fully editable, so you can keep, drop, or reweight any holding",
@@ -74,20 +74,20 @@ export function Landing() {
         <div className="wrap-wide land-hero">
           <div className="land-hero-copy">
             <span className="badge badge-accent" style={{ marginBottom: 20 }}>
-              <SpinIcon /> Onchain index protocol · Built on Robinhood Chain
+              <SpinIcon /> Onchain basket protocol · Built on Robinhood Chain
             </span>
             <h1 className="land-h1">
               Turn any investment thesis into{" "}
               <span style={{ color: "var(--accent-strong)" }}>one investable token.</span>
             </h1>
             <p className="land-sub">
-              Weave lets anyone compose a thematic index of tokenized stocks, publish it onchain in
+              Weave lets anyone compose a thematic basket of tokenized stocks, publish it onchain in
               minutes, and earn a perpetual share of its revenue. No fund, no paperwork, no
               minimums.
             </p>
             <div className="land-cta">
               <Link href="/create" className="btn btn-primary btn-lg">
-                <SparkleIcon /> Compose an index
+                <SparkleIcon /> Compose a basket
               </Link>
               <Link href="/markets" className="btn btn-ghost btn-lg">
                 Explore the market
@@ -101,7 +101,7 @@ export function Landing() {
               <div className="land-stat-div" />
               <div>
                 <div className="num land-stat-n">{baskets.length}</div>
-                <div className="land-stat-l">Live indexes</div>
+                <div className="land-stat-l">Live baskets</div>
               </div>
               <div className="land-stat-div" />
               <div>
@@ -160,7 +160,7 @@ export function Landing() {
               style={{ fontSize: 16, marginTop: 14, lineHeight: 1.6, maxWidth: 480 }}
             >
               Weave&apos;s engine reads the entire Robinhood Chain catalogue, including sectors,
-              market caps, and live prices, then proposes a complete, weighted index with a reasoned
+              market caps, and live prices, then proposes a complete, weighted basket with a reasoned
               case for every pick. Concentration limits and weight rules are enforced before you ever
               deploy.
             </p>
@@ -181,11 +181,11 @@ export function Landing() {
         </div>
       </section>
 
-      {/* ============ FEATURED INDEXES ============ */}
+      {/* ============ FEATURED BASKETS ============ */}
       {featured.length > 0 && (
         <section className="wrap-wide land-section">
           <div className="land-section-head-row">
-            <SectionHead eyebrow="Live on Weave" title="Indexes people are investing in" noMargin />
+            <SectionHead eyebrow="Live on Weave" title="Baskets people are investing in" noMargin />
             <Link href="/markets" className="btn btn-ghost">
               View all markets →
             </Link>
@@ -205,7 +205,7 @@ export function Landing() {
           <Pillar
             icon={<CoinIcon />}
             title="A real creator economy"
-            desc="Publishing an index mints a transferable creator token (ERC-7641) that streams you 80% of all fees. Your thesis becomes a durable, sellable asset."
+            desc="Publishing a basket mints a transferable creator token (ERC-7641) that streams you 80% of all fees. Your thesis becomes a durable, sellable asset."
           >
             <div className="land-pillar-stat">
               <span className="num">80%</span>
@@ -215,7 +215,7 @@ export function Landing() {
           <Pillar
             icon={<BalanceIcon />}
             title="Rebalancing is your choice"
-            desc="Let winners run with a static index, or enable auto-rebalancing with a drift threshold, restored automatically via Chainlink Automation and funded from fees."
+            desc="Let winners run with a static basket, or enable auto-rebalancing with a drift threshold, restored automatically via Chainlink Automation and funded from fees."
           >
             <div className="land-rebal-demo">
               <RebalBadge on={true} small />
@@ -273,7 +273,7 @@ export function Landing() {
                   className="btn btn-lg hover:!border !border-teal-900 transition-all duration-100"
                   style={{ background: "var(--on-accent)", color: "var(--accent-strong)" }}
                 >
-                  Create your first index
+                  Create your first basket
                 </Link>
                 <Link
                   href="/creator"

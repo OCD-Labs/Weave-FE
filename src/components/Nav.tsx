@@ -17,7 +17,7 @@ const LINKS = [
 ] as const;
 
 function isActive(pathname: string, href: string): boolean {
-  // Markets stays active on the index detail pages too.
+  // Markets stays active on the basket detail pages too.
   if (href === "/markets") return pathname.startsWith("/markets") || pathname.startsWith("/baskets");
   return pathname === href || pathname.startsWith(`${href}/`);
 }
