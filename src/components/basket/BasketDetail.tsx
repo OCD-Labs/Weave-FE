@@ -56,7 +56,7 @@ export function BasketDetail({ basket }: { basket: UiBasketDetail }) {
       <div
         style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18, fontSize: 13 }}
       >
-        <Link href="/" className="muted" style={{ fontWeight: 600 }}>
+        <Link href="/markets" className="muted" style={{ fontWeight: 600 }}>
           Markets
         </Link>
         <span className="muted">/</span>
@@ -78,7 +78,7 @@ export function BasketDetail({ basket }: { basket: UiBasketDetail }) {
         >
           <span className="badge badge-warn">Suspended</span>
           <span style={{ fontSize: 14 }}>
-            This basket is suspended and cannot currently accept deposits.
+            This index is suspended and cannot currently accept deposits.
           </span>
         </div>
       )}

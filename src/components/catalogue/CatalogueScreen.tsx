@@ -30,8 +30,7 @@ export function CatalogueScreen() {
       <div style={{ marginBottom: 22 }}>
         <h1 style={{ fontSize: 30 }}>Catalogue</h1>
         <p className="muted" style={{ marginTop: 6, fontSize: 15 }}>
-          Every tokenized equity available for basket construction on Robinhood Chain. Select assets
-          to start a new basket.
+          Every tokenized equity available for index construction on Robinhood Chain. Select assets to start a new index.
         </p>
       </div>
 
@@ -42,7 +41,7 @@ export function CatalogueScreen() {
       />
 
       {selected.length > 0 && (
-        <div className="float-bar" role="region" aria-label="Create basket from selection">
+        <div className="float-bar" role="region" aria-label="Create index from selection">
           <span style={{ fontSize: 14, fontWeight: 600 }}>
             {selected.length} {selected.length === 1 ? "asset" : "assets"} selected
           </span>
@@ -55,7 +54,7 @@ export function CatalogueScreen() {
               Clear
             </button>
             <button type="button" className="btn btn-primary" onClick={startCreate}>
-              Create basket →
+              Create index →
             </button>
           </div>
         </div>

@@ -81,7 +81,7 @@ export function BasketDetailView({ slug }: { slug: string }) {
     if (/not found/i.test(msg)) return <NotFound />;
     return (
       <div className="wrap reveal" style={{ paddingTop: 60, paddingBottom: 80, maxWidth: 520, textAlign: "center" }}>
-        <h1 style={{ fontSize: 24 }}>Couldn&apos;t load this basket</h1>
+        <h1 style={{ fontSize: 24 }}>Couldn&apos;t load this index</h1>
         <p className="muted" style={{ marginTop: 8, fontSize: 14 }}>{msg}</p>
         <button type="button" className="btn btn-primary" style={{ marginTop: 18 }} onClick={() => refetch()}>
           Retry
@@ -97,11 +97,11 @@ export function BasketDetailView({ slug }: { slug: string }) {
 function NotFound() {
   return (
     <div className="wrap reveal" style={{ paddingTop: 80, paddingBottom: 80, maxWidth: 520, textAlign: "center" }}>
-      <h1 style={{ fontSize: 26 }}>Basket not found</h1>
+      <h1 style={{ fontSize: 26 }}>Index not found</h1>
       <p className="muted" style={{ marginTop: 10, fontSize: 15 }}>
-        This basket doesn&apos;t exist or hasn&apos;t been indexed yet.
+        This index doesn&apos;t exist or hasn&apos;t been indexed yet.
       </p>
-      <Link href="/" className="btn btn-primary" style={{ marginTop: 20 }}>
+      <Link href="/markets" className="btn btn-primary" style={{ marginTop: 20 }}>
         Back to Markets
       </Link>
     </div>

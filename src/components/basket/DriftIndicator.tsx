@@ -116,7 +116,7 @@ export function DriftIndicator({ basket }: { basket: UiBasketDetail }) {
         <div style={{ marginTop: 14, padding: 14, background: tintBg, borderRadius: "var(--r-sm)" }}>
           <p style={{ fontSize: 13, lineHeight: 1.5 }}>
             A holding has drifted beyond the threshold. Anyone can trigger a rebalance — the caller
-            pays gas as a public service. Funded baskets rebalance automatically via Chainlink.
+            pays gas as a public service. Funded indexes rebalance automatically via Chainlink.
           </p>
           <button
             type="button"

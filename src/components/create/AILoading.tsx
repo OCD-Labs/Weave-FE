@@ -33,7 +33,7 @@ export function AILoading() {
     >
       <div className="ai-orb" aria-hidden="true" />
       <div>
-        <div style={{ fontWeight: 700, color: "var(--accent-strong)" }}>Composing your basket</div>
+        <div style={{ fontWeight: 700, color: "var(--accent-strong)" }}>Composing your index</div>
         <div className="muted" style={{ fontSize: 13.5, marginTop: 2 }} aria-live="polite">
           {MESSAGES[i]}
         </div>

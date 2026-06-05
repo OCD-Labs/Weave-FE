@@ -50,7 +50,7 @@ export function Creator() {
     return (
       <ConnectGate
         title="Connect to open your creator dashboard"
-        sub="Track the baskets you've published, your creator-token ownership, and revenue you can claim — earned continuously through ERC-7641."
+        sub="Track the indexes you've published, your creator-token ownership, and revenue you can claim — earned continuously through ERC-7641."
       />
     );
   }
@@ -69,7 +69,7 @@ export function Creator() {
         <div>
           <h1 style={{ fontSize: 30 }}>Creator Dashboard</h1>
           <p className="muted" style={{ marginTop: 6, fontSize: 14 }}>
-            Revenue from baskets you&apos;ve published, via ERC-7641.
+            Revenue from indexes you&apos;ve published, via ERC-7641.
           </p>
         </div>
         {dash && dash.baskets.length > 0 && (
@@ -105,8 +105,8 @@ export function Creator() {
           <div className="my-6 grid grid-cols-2 gap-[var(--gap)] md:grid-cols-4">
             <BigStat label="Claimable now" value={fmtUsd(dash.totalClaimable)} cls="up" />
             <BigStat label="Earned to date" value={fmtUsd(dash.totalEarned)} />
-            <BigStat label="AUM across baskets" value={fmtUsdCompact(dash.totalAum)} />
-            <BigStat label="Baskets published" value={dash.baskets.length} />
+            <BigStat label="AUM across indexes" value={fmtUsdCompact(dash.totalAum)} />
+            <BigStat label="Indexes published" value={dash.baskets.length} />
           </div>
 
           <div className="grid gap-[var(--gap)]">
@@ -123,13 +123,11 @@ export function Creator() {
 function EmptyCreator() {
   return (
     <div className="card card-pad mt-6" style={{ textAlign: "center", padding: "56px 24px" }}>
-      <h2 style={{ fontSize: 20 }}>You haven&apos;t published any baskets</h2>
+      <h2 style={{ fontSize: 20 }}>You haven&apos;t published any indexes</h2>
       <p className="muted" style={{ marginTop: 8, fontSize: 14 }}>
-        Create a basket to start earning a continuous share of its management-fee revenue.
+        Create an index to start earning a continuous share of its management-fee revenue.
       </p>
-      <Link href="/create" className="btn btn-primary" style={{ marginTop: 18 }}>
-        Create a basket
-      </Link>
+      <Link href="/create" className="btn btn-primary" style={{ marginTop: 18 }}>Create an index</Link>
     </div>
   );
 }

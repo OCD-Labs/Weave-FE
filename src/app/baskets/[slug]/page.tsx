@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { BasketDetailView } from "@/components/basket/BasketDetailView";
 
 export const metadata: Metadata = {
-  title: "Basket — Weave",
-  description: "Basket composition, performance, and deposit/redeem on Weave.",
+  title: "Index — Weave",
+  description: "Index composition, performance, and deposit/redeem on Weave.",
 };
 
 export default async function BasketDetailPage({

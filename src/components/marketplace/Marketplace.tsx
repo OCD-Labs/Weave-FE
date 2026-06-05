@@ -116,12 +116,12 @@ export function Marketplace() {
               className="muted"
               style={{ fontSize: 17, marginTop: 16, lineHeight: 1.55, maxWidth: 560 }}
             >
-              Compose a thematic basket of tokenized equities, publish it onchain, and earn a
+              Compose a thematic index of tokenized stocks, publish it onchain, and earn a
               continuous share of its revenue for as long as investors hold it.
             </p>
             <div style={{ display: "flex", gap: 12, marginTop: 26, flexWrap: "wrap" }}>
               <Link href="/create" className="btn btn-primary btn-lg">
-                Create a basket
+                Create an index
               </Link>
               <a href="#mkt-list" className="btn btn-ghost btn-lg">
                 Browse markets
@@ -130,7 +130,7 @@ export function Marketplace() {
           </div>
           <div className="grid grid-cols-2 gap-3.5" style={{ minWidth: 280 }}>
             <Stat label="Total value woven" value={fmtUsdCompact(totalAum)} />
-            <Stat label="Live baskets" value={summaries.length} />
+            <Stat label="Live indexes" value={summaries.length} />
             <Stat label="Protocol fee" value="0.50%" sub="80% to creators" />
             <Stat label="Rebalancing" value="Onchain" sub="via Chainlink" />
           </div>
@@ -166,10 +166,10 @@ export function Marketplace() {
             <input
               className="input"
               style={{ paddingLeft: 38, height: 40 }}
-              placeholder="Search baskets by name or thesis"
+              placeholder="Search indexes by name or thesis"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              aria-label="Search baskets by name or thesis"
+              aria-label="Search indexes by name or thesis"
             />
           </div>
           <Segmented
@@ -247,7 +247,7 @@ export function Marketplace() {
         ) : isError ? (
           <div className="card card-pad mt-2 text-center">
             <div className="down" style={{ fontWeight: 700, fontSize: 16 }}>
-              Couldn&apos;t load baskets
+              Couldn&apos;t load indexes
             </div>
             <p className="muted" style={{ marginTop: 6, fontSize: 14 }}>
               {error instanceof Error ? error.message : "Please try again."}
