@@ -103,7 +103,7 @@ export function Marketplace() {
           <div className="grid w-full flex-1 grid-cols-2 gap-[var(--gap)] sm:grid-cols-4">
             <Stat big label="Total value woven" value={fmtUsdCompact(totalAum)} />
             <Stat big label="Live baskets" value={summaries.length} />
-            <Stat big label="Protocol fee" value="0.50%" sub="80% to creators" />
+            <Stat big label="Protocol fee" value="0.50%" />
             <Stat big label="Rebalancing" value="Onchain" sub="via Chainlink" />
           </div>
           <Link
