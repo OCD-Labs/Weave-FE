@@ -25,7 +25,7 @@ const HOW_IT_WORKS = [
   {
     n: "01",
     t: "Describe your thesis",
-    d: 'Write what you believe in, like "European defense primes" or "AI power infrastructure outside the US." Plain language is enough.',
+    d: 'With plain English, describe what you believe in, like "European defense primes" or "AI power infrastructure outside the US."',
     icon: <SparkleIcon />,
   },
   {
@@ -37,13 +37,13 @@ const HOW_IT_WORKS = [
   {
     n: "03",
     t: "Publish onchain",
-    d: "Deploy as a single ERC-20. Investors deposit USDG and receive your basket token, priced live by Chainlink.",
+    d: "Deploy your basket to Robinhood Chain. Investors deposit USDG and gain instant exposure to every stock in your index.",
     icon: <ChainIcon />,
   },
   {
     n: "04",
     t: "Earn continuously",
-    d: "Collect 80% of the 0.50% management fee for the life of the basket, via ERC-7641 revenue sharing.",
+    d: "Receive 80% of the 0.50% management fee for the life of the basket, via ERC-7641 revenue sharing.",
     icon: <CoinIcon />,
   },
 ];
@@ -74,16 +74,15 @@ export function Landing() {
         <div className="wrap-wide land-hero">
           <div className="land-hero-copy">
             <span className="badge badge-accent" style={{ marginBottom: 20 }}>
-              <SpinIcon /> Onchain basket protocol · Built on Robinhood Chain
+              <SpinIcon /> Onchain index protocol · Built on Robinhood Chain
             </span>
             <h1 className="land-h1">
               Turn any investment thesis into{" "}
-              <span style={{ color: "var(--accent-strong)" }}>one investable token.</span>
+              <span style={{ color: "var(--accent-strong)" }}>one investable index.</span>
             </h1>
             <p className="land-sub">
-              Weave lets anyone compose a thematic basket of tokenized stocks, publish it onchain in
-              minutes, and earn a perpetual share of its revenue. No fund, no paperwork, no
-              minimums.
+              Weave lets anyone compose a thematic basket of tokenized stocks, publish it onchain,
+              and earn a perpetual share of its revenue.
             </p>
             <div className="land-cta">
               <Link href="/create" className="btn btn-primary btn-lg">
@@ -161,8 +160,7 @@ export function Landing() {
             >
               Weave&apos;s engine reads the entire Robinhood Chain catalogue, including sectors,
               market caps, and live prices, then proposes a complete, weighted basket with a reasoned
-              case for every pick. Concentration limits and weight rules are enforced before you ever
-              deploy.
+              case for every pick.
             </p>
             <ul className="land-checks">
               {AI_CHECKS.map((c) => (
@@ -215,7 +213,7 @@ export function Landing() {
           <Pillar
             icon={<BalanceIcon />}
             title="Rebalancing is your choice"
-            desc="Let winners run with a static basket, or enable auto-rebalancing with a drift threshold, restored automatically via Chainlink Automation and funded from fees."
+            desc="Let individual stocks rise or fall with a static basket, or enable auto-rebalancing with a drift threshold, restored automatically via Chainlink Automation."
           >
             <div className="land-rebal-demo">
               <RebalBadge on={true} small />
