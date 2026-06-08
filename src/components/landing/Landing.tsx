@@ -25,8 +25,8 @@ const HOW_IT_WORKS = [
   {
     n: "01",
     t: "Describe your thesis",
-    d: 'Write what you believe in, like "European defense primes" or "AI power infrastructure outside the US." Plain language is enough.',
-    icon: <SparkleIcon />,
+    d: 'With plain English, describe what you believe in, like "European defense primes" or "AI power infrastructure outside the US."',
+    icon: <SparkleIcon size={30} />,
   },
   {
     n: "02",
@@ -37,13 +37,13 @@ const HOW_IT_WORKS = [
   {
     n: "03",
     t: "Publish onchain",
-    d: "Deploy as a single ERC-20. Investors deposit USDG and receive your basket token, priced live by Chainlink.",
-    icon: <ChainIcon />,
+    d: "Deploy your basket to Robinhood Chain. Investors deposit USDG and gain instant exposure to every stock in your index.",
+    icon: <ChainIcon size={40} />,
   },
   {
     n: "04",
     t: "Earn continuously",
-    d: "Collect 80% of the 0.50% management fee for the life of the basket, via ERC-7641 revenue sharing.",
+    d: "Receive 80% of the 0.50% management fee for the life of the basket, via ERC-7641 revenue sharing.",
     icon: <CoinIcon />,
   },
 ];
@@ -74,22 +74,21 @@ export function Landing() {
         <div className="wrap-wide land-hero">
           <div className="land-hero-copy">
             <span className="badge badge-accent" style={{ marginBottom: 20 }}>
-              <SpinIcon /> Onchain basket protocol · Built on Robinhood Chain
+              <SpinIcon /> Onchain index protocol · Built on Robinhood Chain
             </span>
             <h1 className="land-h1">
               Turn any investment thesis into{" "}
-              <span style={{ color: "var(--accent-strong)" }}>one investable token.</span>
+              <span style={{ color: "var(--accent-strong)" }}>one investable index.</span>
             </h1>
             <p className="land-sub">
-              Weave lets anyone compose a thematic basket of tokenized stocks, publish it onchain in
-              minutes, and earn a perpetual share of its revenue. No fund, no paperwork, no
-              minimums.
+              Weave lets anyone compose a thematic basket of tokenized stocks, publish it onchain, and earn a perpetual share of its revenue or
+              invest in an existing basket of tokenized stocks with a single USDG deposit.
             </p>
             <div className="land-cta">
-              <Link href="/create" className="btn btn-primary btn-lg">
+              <Link href="/create" className="btn btn-primary btn-lg max-sm:w-[50%]">
                 <SparkleIcon /> Compose a basket
               </Link>
-              <Link href="/markets" className="btn btn-ghost btn-lg">
+              <Link href="/markets" className="btn btn-ghost btn-lg max:sm:w-[50%]">
                 Explore the market
               </Link>
             </div>
@@ -130,7 +129,11 @@ export function Landing() {
 
       {/* ============ HOW IT WORKS ============ */}
       <section className="wrap-wide land-section">
-        <SectionHead eyebrow="How it works" title="From conviction to token in four steps" />
+        <SectionHead
+          eyebrow="How it works"
+          title="From conviction to an index in four steps"
+          sub="This is the path for creators. Investing is even simpler: browse live baskets, deposit USDG, and hold a diversified position you can redeem anytime at NAV."
+        />
         <div className="land-steps">
           {HOW_IT_WORKS.map((s) => (
             <div key={s.n} className="card card-pad land-step">
@@ -161,8 +164,7 @@ export function Landing() {
             >
               Weave&apos;s engine reads the entire Robinhood Chain catalogue, including sectors,
               market caps, and live prices, then proposes a complete, weighted basket with a reasoned
-              case for every pick. Concentration limits and weight rules are enforced before you ever
-              deploy.
+              case for every pick.
             </p>
             <ul className="land-checks">
               {AI_CHECKS.map((c) => (
@@ -185,7 +187,12 @@ export function Landing() {
       {featured.length > 0 && (
         <section className="wrap-wide land-section">
           <div className="land-section-head-row">
-            <SectionHead eyebrow="Live on Weave" title="Baskets people are investing in" noMargin />
+            <SectionHead
+              eyebrow="Live on Weave"
+              title="Invest in a basket today"
+              sub="Buy in with USDG in a single transaction, hold a diversified portfolio, and redeem anytime at live NAV."
+              noMargin
+            />
             <Link href="/markets" className="btn btn-ghost">
               View all markets →
             </Link>
@@ -215,7 +222,7 @@ export function Landing() {
           <Pillar
             icon={<BalanceIcon />}
             title="Rebalancing is your choice"
-            desc="Let winners run with a static basket, or enable auto-rebalancing with a drift threshold, restored automatically via Chainlink Automation and funded from fees."
+            desc="Let individual stocks rise or fall with a static basket, or enable auto-rebalancing with a drift threshold, restored automatically via Chainlink Automation."
           >
             <div className="land-rebal-demo">
               <RebalBadge on={true} small />
@@ -489,10 +496,12 @@ function AIPromptMock() {
 function SectionHead({
   eyebrow,
   title,
+  sub,
   noMargin,
 }: {
   eyebrow: string;
   title: string;
+  sub?: string;
   noMargin?: boolean;
 }) {
   return (
@@ -503,6 +512,11 @@ function SectionHead({
       <h2 className="land-h2" style={{ marginTop: 10 }}>
         {title}
       </h2>
+      {sub && (
+        <p className="muted" style={{ fontSize: 15.5, marginTop: 12, lineHeight: 1.55 }}>
+          {sub}
+        </p>
+      )}
     </div>
   );
 }

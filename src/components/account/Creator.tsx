@@ -56,7 +56,7 @@ export function Creator() {
   }
 
   return (
-    <div className="wrap-wide reveal" style={{ paddingTop: 36, paddingBottom: 64 }}>
+    <div className="wrap-wide w-full reveal" style={{ paddingTop: 36, paddingBottom: 64 }}>
       <div
         style={{
           display: "flex",
@@ -135,7 +135,7 @@ function EmptyCreator() {
 function CreatorSkeleton() {
   return (
     <>
-      <div className="my-6 grid grid-cols-2 gap-[var(--gap)] md:grid-cols-4">
+      <div className="my-6 w-full grid grid-cols-2 gap-[var(--gap)] md:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="card card-pad">
             <div className="skel" style={{ height: 12, width: "60%" }} />
