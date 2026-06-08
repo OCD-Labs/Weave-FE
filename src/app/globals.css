@@ -439,6 +439,11 @@
     font-size: 12px;
     font-weight: 650;
     letter-spacing: -0.01em;
+    white-space: nowrap;
+    flex: none;
+  }
+  .badge svg {
+    flex: none;
   }
   .badge-accent {
     background: var(--accent-tint);
@@ -1010,7 +1015,12 @@
     grid-template-columns: 1fr 1fr;
     gap: 56px;
     align-items: center;
-    padding: 72px 0;
+    /* Vertical only — horizontal padding comes from .wrap-wide so the band
+       lines up with the rest of the page and shrinks to 18px on mobile. */
+    padding-block: 72px;
+  }
+  .land-feature > * {
+    min-width: 0;
   }
   .land-checks {
     list-style: none;
@@ -1073,6 +1083,7 @@
     font-size: 13px;
     font-weight: 600;
     flex: 1;
+    min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1202,7 +1213,7 @@
     .land-feature {
       grid-template-columns: 1fr;
       gap: 36px;
-      padding: 56px 0;
+      padding-block: 56px;
     }
     .land-featured {
       grid-template-columns: 1fr 1fr;
@@ -1250,6 +1261,9 @@
     }
     .land-art-chip-2 {
       right: 0;
+    }
+    .land-ai-row {
+      gap: 3px;
     }
   }
 }

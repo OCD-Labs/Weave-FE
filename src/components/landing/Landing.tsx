@@ -26,7 +26,7 @@ const HOW_IT_WORKS = [
     n: "01",
     t: "Describe your thesis",
     d: 'With plain English, describe what you believe in, like "European defense primes" or "AI power infrastructure outside the US."',
-    icon: <SparkleIcon />,
+    icon: <SparkleIcon size={30} />,
   },
   {
     n: "02",
@@ -38,7 +38,7 @@ const HOW_IT_WORKS = [
     n: "03",
     t: "Publish onchain",
     d: "Deploy your basket to Robinhood Chain. Investors deposit USDG and gain instant exposure to every stock in your index.",
-    icon: <ChainIcon />,
+    icon: <ChainIcon size={40} />,
   },
   {
     n: "04",
@@ -81,14 +81,14 @@ export function Landing() {
               <span style={{ color: "var(--accent-strong)" }}>one investable index.</span>
             </h1>
             <p className="land-sub">
-              Weave lets anyone compose a thematic basket of tokenized stocks, publish it onchain,
-              and earn a perpetual share of its revenue.
+              Weave lets anyone compose a thematic basket of tokenized stocks, publish it onchain, and earn a perpetual share of its revenue or
+              invest in an existing basket of tokenized stocks with a single USDG deposit.
             </p>
             <div className="land-cta">
-              <Link href="/create" className="btn btn-primary btn-lg">
+              <Link href="/create" className="btn btn-primary btn-lg max-sm:w-[50%]">
                 <SparkleIcon /> Compose a basket
               </Link>
-              <Link href="/markets" className="btn btn-ghost btn-lg">
+              <Link href="/markets" className="btn btn-ghost btn-lg max:sm:w-[50%]">
                 Explore the market
               </Link>
             </div>
@@ -129,7 +129,11 @@ export function Landing() {
 
       {/* ============ HOW IT WORKS ============ */}
       <section className="wrap-wide land-section">
-        <SectionHead eyebrow="How it works" title="From conviction to token in four steps" />
+        <SectionHead
+          eyebrow="How it works"
+          title="From conviction to an index in four steps"
+          sub="This is the path for creators. Investing is even simpler: browse live baskets, deposit USDG, and hold a diversified position you can redeem anytime at NAV."
+        />
         <div className="land-steps">
           {HOW_IT_WORKS.map((s) => (
             <div key={s.n} className="card card-pad land-step">
@@ -183,7 +187,12 @@ export function Landing() {
       {featured.length > 0 && (
         <section className="wrap-wide land-section">
           <div className="land-section-head-row">
-            <SectionHead eyebrow="Live on Weave" title="Baskets people are investing in" noMargin />
+            <SectionHead
+              eyebrow="Live on Weave"
+              title="Invest in a basket today"
+              sub="Buy in with USDG in a single transaction, hold a diversified portfolio, and redeem anytime at live NAV."
+              noMargin
+            />
             <Link href="/markets" className="btn btn-ghost">
               View all markets →
             </Link>
@@ -487,10 +496,12 @@ function AIPromptMock() {
 function SectionHead({
   eyebrow,
   title,
+  sub,
   noMargin,
 }: {
   eyebrow: string;
   title: string;
+  sub?: string;
   noMargin?: boolean;
 }) {
   return (
@@ -501,6 +512,11 @@ function SectionHead({
       <h2 className="land-h2" style={{ marginTop: 10 }}>
         {title}
       </h2>
+      {sub && (
+        <p className="muted" style={{ fontSize: 15.5, marginTop: 12, lineHeight: 1.55 }}>
+          {sub}
+        </p>
+      )}
     </div>
   );
 }
