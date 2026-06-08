@@ -74,7 +74,7 @@ export function Portfolio() {
   }
 
   return (
-    <div className="wrap-wide reveal" style={{ paddingTop: 36, paddingBottom: 64 }}>
+    <div className="wrap-wide w-full reveal" style={{ paddingTop: 36, paddingBottom: 64 }}>
       <h1 style={{ fontSize: 30 }}>Portfolio</h1>
       <p className="muted" style={{ marginTop: 6, fontSize: 14, marginBottom: 24 }}>
         Positions for <span className="mono">{shortAddr(address)}</span>
@@ -230,7 +230,7 @@ function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void 
 function PortfolioSkeleton() {
   return (
     <>
-      <div className="mb-[26px] grid grid-cols-2 gap-[var(--gap)] md:grid-cols-4">
+      <div className="mb-[26px] w-full grid grid-cols-2 gap-[var(--gap)] md:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="card card-pad">
             <div className="skel" style={{ height: 12, width: "60%" }} />
