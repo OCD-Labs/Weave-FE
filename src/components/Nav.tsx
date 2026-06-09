@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { BrandMark } from "./BrandMark";
 import { WalletIcon, ChevronIcon, MenuIcon } from "./icons";
 import { useWallet } from "./wallet/WalletProvider";
+import { useUsdgBalance } from "@/lib/web3/hooks";
+import { fmtNum } from "@/lib/format";
 
 const LINKS = [
   { label: "Home", href: "/" },
@@ -100,6 +102,7 @@ export function Nav() {
 
 function WalletButton() {
   const { connected, address, connect, disconnect } = useWallet();
+  const { balance, isLoading: balLoading } = useUsdgBalance();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -153,8 +156,21 @@ function WalletButton() {
             <div className="eyebrow" style={{ fontSize: 10.5 }}>
               Connected
             </div>
-            <div className="mono" style={{ fontSize: 13, marginTop: 3 }}>
-              {address}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                gap: 8,
+                marginTop: 3,
+              }}
+            >
+              <span className="mono" style={{ fontSize: 13 }}>
+                {address}
+              </span>
+              <span className="num bg-teal-50 text-teal-700 border border-teal-600 rounded-[4px] p-[2px]" style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink-2)" }}>
+                {balLoading ? "…" : `${fmtNum(balance, 2)} USDG`}
+              </span>
             </div>
           </div>
           <hr className="divider" />

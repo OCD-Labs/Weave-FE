@@ -2,12 +2,13 @@
 
 import { useAccount, useReadContract, useReadContracts } from "wagmi";
 import { parseAbi, type Address } from "viem";
-import { basketAbi, registryAbi } from "./abis";
+import { basketAbi, registryAbi, erc20Abi } from "./abis";
 import { CONTRACTS } from "./addresses";
 import { tokensToNumber, usdgToNumber } from "../units";
 
 const REGISTRY = parseAbi(registryAbi);
 const BASKET = parseAbi(basketAbi);
+const ERC20 = parseAbi(erc20Abi);
 
 // Sensible fallbacks (verified live on testnet) so the UI works even if the
 // reads are pending or the RPC hiccups.
@@ -96,6 +97,21 @@ export function useBasketBalance(basket?: Address) {
   });
   const raw = (data as bigint | undefined) ?? 0n;
   return { raw, balance: tokensToNumber(raw), refetch, isLoading };
+}
+
+/** The connected wallet's USDG balance (the settlement token). Raw 6-dp bigint
+   plus a display number. Polled so it reflects deposits/redeems without reload. */
+export function useUsdgBalance() {
+  const { address } = useAccount();
+  const { data, refetch, isLoading } = useReadContract({
+    address: CONTRACTS.usdg,
+    abi: ERC20,
+    functionName: "balanceOf",
+    args: address ? [address] : undefined,
+    query: { enabled: !!address, refetchInterval: 30_000 },
+  });
+  const raw = (data as bigint | undefined) ?? 0n;
+  return { raw, balance: usdgToNumber(raw), refetch, isLoading };
 }
 
 /** Live check whether the basket currently needs rebalancing (controls the
