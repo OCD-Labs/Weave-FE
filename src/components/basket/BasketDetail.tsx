@@ -155,15 +155,15 @@ export function BasketDetail({ basket }: { basket: UiBasketDetail }) {
           </p>
           <div style={{ display: "flex", gap: 18, marginTop: 14, fontSize: 13, flexWrap: "wrap" }}>
             <CopyField
+              label="Basket address"
+              value={basket.address}
+              display={shortLabel(basket.address)}
+            />
+            <CopyField
               label="Created by"
               value={basket.creator}
               display={creatorLabel(basket.creator)}
               accent
-            />
-            <CopyField
-              label="Basket address"
-              value={basket.address}
-              display={shortLabel(basket.address)}
             />
           </div>
         </div>
