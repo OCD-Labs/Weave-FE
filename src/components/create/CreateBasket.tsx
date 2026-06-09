@@ -403,9 +403,9 @@ export function CreateBasket() {
               <p className="muted" style={{ fontSize: 12.5, marginTop: 10, lineHeight: 1.5 }}>
                 {descOk ? (
                   <>
-                    <strong style={{ color: "var(--ink-2)" }}>Select stocks</strong> — pick
-                    assets from the catalogue and set weights.{" "}
-                    <strong style={{ color: "var(--ink-2)" }}>Compose with AI</strong> — get a
+                    <strong style={{ color: "var(--ink-2)" }}>Select stocks</strong> - pick
+                    assets from the catalogue and set weights.{" "} <br />
+                    <strong style={{ color: "var(--ink-2)" }}>Compose with AI</strong> - get a
                     proposed composition from your description to review and edit.
                   </>
                 ) : (

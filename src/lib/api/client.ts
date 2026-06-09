@@ -11,8 +11,29 @@ import type {
   ApiPrice,
 } from "./types";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://weave.up.railway.app";
+const PUBLIC_FALLBACK = "https://weave.up.railway.app";
+
+/**
+ * Resolve the backend base URL for the current execution context.
+ *
+ * - Default: the public backend URL (browser fetches it directly, unchanged).
+ * - Private-networking mode: set NEXT_PUBLIC_BACKEND_URL="/be". The browser then
+ *   calls this app's own origin (/be/*), which next.config rewrites to
+ *   BACKEND_INTERNAL_URL over Railway's private network. A relative base has no
+ *   origin server-side, so server-rendered calls use BACKEND_INTERNAL_URL directly.
+ */
+function resolveBaseUrl(): string {
+  const configured = process.env.NEXT_PUBLIC_BACKEND_URL ?? PUBLIC_FALLBACK;
+  if (configured.startsWith("/")) {
+    if (typeof window === "undefined") {
+      return process.env.BACKEND_INTERNAL_URL ?? PUBLIC_FALLBACK;
+    }
+    return configured;
+  }
+  return configured;
+}
+
+const BASE_URL = resolveBaseUrl();
 
 /** Error thrown for any non-2xx API response, carrying the backend's
    `{ error, code }` message where available. */

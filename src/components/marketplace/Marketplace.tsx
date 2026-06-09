@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useBaskets } from "@/lib/api/hooks";
+import { useBaskets, useCatalogue } from "@/lib/api/hooks";
 import { mapBasketSummary, type UiBasketSummary } from "@/lib/api/map";
 import { BASKETS } from "@/lib/data";
 import type { Basket } from "@/lib/types";
@@ -17,6 +17,9 @@ import { EmptyState } from "./EmptyState";
 
 type Rebal = "all" | "auto" | "static";
 type Sort = "aum" | "new";
+
+/** Cards per page. 12 divides evenly across the 1/2/3-column grid. */
+const PAGE_SIZE = 12;
 
 /** Map a full mock Basket into the lean live-summary shape so it can render
    through LiveBasketCard for an apples-to-apples comparison. */
@@ -50,9 +53,25 @@ export function Marketplace() {
   const isMock = dataSource === "mock";
 
   const { data, isLoading: liveLoading, isError, error, refetch } = useBaskets();
-  const [rebal, setRebal] = useState<Rebal>("all");
-  const [sort, setSort] = useState<Sort>("aum");
-  const [q, setQ] = useState("");
+  const { data: catalogue } = useCatalogue();
+  const [rebal, setRebalState] = useState<Rebal>("all");
+  const [sort, setSortState] = useState<Sort>("aum");
+  const [q, setQState] = useState("");
+  const [page, setPage] = useState(1);
+
+  // Any filter/search/sort change resets to the first page.
+  const setRebal = (v: Rebal) => {
+    setRebalState(v);
+    setPage(1);
+  };
+  const setSort = (v: Sort) => {
+    setSortState(v);
+    setPage(1);
+  };
+  const setQ = (v: string) => {
+    setQState(v);
+    setPage(1);
+  };
 
   // In mock mode, keep the full Basket objects too so we can also render the
   // original BasketCard side-by-side with LiveBasketCard.
@@ -64,13 +83,34 @@ export function Marketplace() {
   const isLoading = isMock ? false : liveLoading;
   const totalAum = useMemo(() => summaries.reduce((s, b) => s + b.aum, 0), [summaries]);
 
+  // Symbol -> company name, so a query like "Amazon" matches a basket holding
+  // AMZN even though the basket summary only carries constituent symbols.
+  const symToName = useMemo(() => {
+    const m = new Map<string, string>();
+    (catalogue ?? []).forEach((a) => m.set(a.symbol.toLowerCase(), a.name.toLowerCase()));
+    return m;
+  }, [catalogue]);
+
+  // Matches basket name, ticker, thesis, and any constituent by symbol or
+  // company name (the latter joined from the catalogue).
+  const matchesQuery = (b: UiBasketSummary, query: string) => {
+    if (!query) return true;
+    if (
+      b.name.toLowerCase().includes(query) ||
+      b.symbol.toLowerCase().includes(query) ||
+      b.thesis.toLowerCase().includes(query)
+    )
+      return true;
+    return b.constituents.some((c) => {
+      const sym = c.sym.toLowerCase();
+      return sym.includes(query) || (symToName.get(sym)?.includes(query) ?? false);
+    });
+  };
+
   const filterFn = (b: UiBasketSummary) => {
-    const query = q.trim().toLowerCase();
     if (rebal === "auto" && !b.rebalancing) return false;
     if (rebal === "static" && b.rebalancing) return false;
-    if (query && !(b.name.toLowerCase().includes(query) || b.thesis.toLowerCase().includes(query)))
-      return false;
-    return true;
+    return matchesQuery(b, q.trim().toLowerCase());
   };
   const sortFn = (a: UiBasketSummary, b: UiBasketSummary) =>
     sort === "aum" ? b.aum - a.aum : b.createdAt - a.createdAt;
@@ -78,8 +118,21 @@ export function Marketplace() {
   const list = useMemo(
     () => summaries.filter(filterFn).sort(sortFn),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [summaries, rebal, sort, q]
+    [summaries, rebal, sort, q, symToName]
   );
+
+  // Pagination over the filtered list (clamp the page if the list shrank).
+  const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageItems = useMemo(
+    () => list.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [list, safePage]
+  );
+
+  const goToPage = (p: number) => {
+    setPage(p);
+    document.getElementById("mkt-list")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   // Mock full-Basket list filtered the same way (for the comparison row).
   const mockList = useMemo(
@@ -106,13 +159,13 @@ export function Marketplace() {
             <Stat big label="Protocol fee" value="0.50%" />
             <Stat big label="Rebalancing" value="Onchain" sub="via Chainlink" />
           </div>
-          <Link
+          {/* <Link
             href="/create"
             className="btn btn-primary btn-lg"
             style={{ whiteSpace: "nowrap", flex: "none" }}
           >
             Create a basket
-          </Link>
+          </Link> */}
         </div>
       </div>
 
@@ -145,10 +198,10 @@ export function Marketplace() {
             <input
               className="input"
               style={{ paddingLeft: 38, height: 40 }}
-              placeholder="Search baskets by name or thesis"
+              placeholder="Search by name, thesis, or holding (e.g. AMZN)"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              aria-label="Search baskets by name or thesis"
+              aria-label="Search baskets by name, thesis, or holding"
             />
           </div>
           <Segmented
@@ -243,16 +296,93 @@ export function Marketplace() {
         ) : list.length === 0 ? (
           <EmptyState />
         ) : (
-          <div
-            key={`${rebal}-${sort}-${q}`}
-            className="stagger mt-2 grid grid-cols-1 gap-[var(--gap)] sm:grid-cols-2 xl:grid-cols-3"
-          >
-            {list.map((b) => (
-              <LiveBasketCard key={b.address} basket={b} />
-            ))}
-          </div>
+          <>
+            <div
+              key={`${rebal}-${sort}-${q}-${safePage}`}
+              className="stagger mt-2 grid grid-cols-1 gap-[var(--gap)] sm:grid-cols-2 xl:grid-cols-3"
+            >
+              {pageItems.map((b) => (
+                <LiveBasketCard key={b.address} basket={b} />
+              ))}
+            </div>
+            <Pagination page={safePage} totalPages={totalPages} onChange={goToPage} />
+          </>
         )}
       </div>
     </div>
+  );
+}
+
+/** Build a compact page window: all pages when few, else first/last with a
+   sliding window around the current page and ellipses. */
+function pageWindow(page: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const out: (number | "…")[] = [1];
+  const start = Math.max(2, page - 1);
+  const end = Math.min(total - 1, page + 1);
+  if (start > 2) out.push("…");
+  for (let i = start; i <= end; i++) out.push(i);
+  if (end < total - 1) out.push("…");
+  out.push(total);
+  return out;
+}
+
+function Pagination({
+  page,
+  totalPages,
+  onChange,
+}: {
+  page: number;
+  totalPages: number;
+  onChange: (p: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+  return (
+    <nav
+      aria-label="Pagination"
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: 6,
+        marginTop: 36,
+        flexWrap: "wrap",
+      }}
+    >
+      <button
+        type="button"
+        className="btn btn-ghost btn-sm"
+        disabled={page <= 1}
+        onClick={() => onChange(page - 1)}
+      >
+        Prev
+      </button>
+      {pageWindow(page, totalPages).map((n, i) =>
+        n === "…" ? (
+          <span key={`gap-${i}`} className="muted" style={{ padding: "0 6px" }}>
+            …
+          </span>
+        ) : (
+          <button
+            key={n}
+            type="button"
+            className={`btn btn-sm ${n === page ? "btn-primary" : "btn-ghost"}`}
+            aria-current={n === page ? "page" : undefined}
+            onClick={() => onChange(n)}
+            style={{ minWidth: 36 }}
+          >
+            {n}
+          </button>
+        )
+      )}
+      <button
+        type="button"
+        className="btn btn-ghost btn-sm"
+        disabled={page >= totalPages}
+        onClick={() => onChange(page + 1)}
+      >
+        Next
+      </button>
+    </nav>
   );
 }
