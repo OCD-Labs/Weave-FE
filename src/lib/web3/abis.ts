@@ -94,6 +94,74 @@ export const factoryAbi = [
   ...contractErrors,
 ] as const;
 
+// ---- Governance / admin surface (Frontend Integration Specification §16) ----
+// Restricted to the governance address; every write reverts onlyGovernance for
+// any other signer (the real access gate is on-chain). Read getters are included
+// for prefilling forms with current values. Some getter names are best-effort —
+// reads use allowFailure so a missing getter just renders no current value.
+export const registryAdminAbi = [
+  // current values
+  "function managementFeeBps() view returns (uint256)",
+  "function protocolShareBps() view returns (uint256)",
+  "function creatorShareBps() view returns (uint256)",
+  "function minFirstDepositUsdg() view returns (uint256)",
+  "function maxConstituents() view returns (uint256)",
+  "function minWeightBps() view returns (uint256)",
+  "function oracleStalenessSecs() view returns (uint256)",
+  "function minRebalanceTradeSizeUsdg() view returns (uint256)",
+  "function maxSwapSlippageBps() view returns (uint256)",
+  "function minAUMUsdg() view returns (uint256)",
+  "function protocolTreasury() view returns (address)",
+  "function swapRouter() view returns (address)",
+  "function basketFactory() view returns (address)",
+  "function automationContract() view returns (address)",
+  "function governance() view returns (address)",
+  "function pendingGovernance() view returns (address)",
+  "function paused() view returns (bool)",
+  // emergency
+  "function pauseAll()",
+  "function unpauseAll()",
+  // catalogue
+  "function addAsset((address tokenAddress,address oracle,string symbol,string name,string sector,bool active) asset)",
+  "function deactivateAsset(address token)",
+  "function reactivateAsset(address token)",
+  // parameters
+  "function setManagementFee(uint256 feeBps)",
+  "function setFeeSplit(uint256 protocolShareBps)",
+  "function setMinAUM(uint256 minAumUsdg)",
+  "function setOracleStaleness(uint256 secs)",
+  "function setMinRebalanceTradeSize(uint256 usdgAmount)",
+  "function setMaxSwapSlippage(uint256 bps)",
+  "function setMinFirstDeposit(uint256 usdgAmount)",
+  "function setMaxConstituents(uint256 max)",
+  "function setMinWeightBps(uint256 bps)",
+  // protocol addresses
+  "function setSwapRouter(address router)",
+  "function setBasketFactory(address factory)",
+  "function setAutomationContract(address automation)",
+  "function setProtocolTreasury(address treasury)",
+  // two-step governance transfer
+  "function nominateGovernance(address nominee)",
+  "function acceptGovernance()",
+  ...contractErrors,
+] as const;
+
+export const automationAbi = [
+  "function batchSize() view returns (uint256)",
+  "function maxRebalanceSlippageBps() view returns (uint256)",
+  "function setBatchSize(uint256 newSize)",
+  "function setMaxRebalanceSlippage(uint256 bps)",
+] as const;
+
+export const swapRouterAbi = [
+  "function owner() view returns (address)",
+  "function spreadBps() view returns (uint256)",
+  "function fund(address token, uint256 amount)",
+  "function withdraw(address token, uint256 amount)",
+  "function withdrawAll(address[] tokens)",
+  "function setSpread(uint256 bps)",
+] as const;
+
 export const creatorTokenAbi = [
   "function balanceOf(address account) view returns (uint256)",
   "function claimableRevenue(address account, uint256 snapshotId) view returns (uint256)",
