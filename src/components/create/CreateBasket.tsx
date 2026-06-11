@@ -250,7 +250,7 @@ export function CreateBasket() {
   }
 
   return (
-    <div className="wrap-wide reveal" style={{ paddingTop: 32, paddingBottom: 64 }}>
+    <div className="wrap reveal" style={{ paddingTop: 32, paddingBottom: 64, maxWidth: 920 }}>
       <Stepper steps={STEPS} step={step} />
 
       {/* STEP 1 — Describe */}
