@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { UiCreatorBasket } from "@/lib/api/map";
-import { fmtUsd, fmtUsdCompact } from "@/lib/format";
+import { fmtUsd, fmtUsdCompact, ago } from "@/lib/format";
 import { isRealAddress } from "@/lib/web3/addresses";
 import { useClaimAll, useCreatorOwnership } from "@/lib/web3/useCreatorToken";
 import { useToast } from "../toast/ToastProvider";
@@ -21,7 +21,10 @@ export function CreatorBasketCard({ c }: { c: UiCreatorBasket }) {
     (live ? c.creatorToken : "0x0000000000000000000000000000000000000000") as `0x${string}`
   );
 
-  const maxRev = Math.max(1, ...c.revenue.map((r) => r.usdc));
+  // Scale against the largest actual snapshot (not a $1 floor) so sub-dollar
+  // testnet revenues still render as proportional bars instead of flat minimums.
+  const maxRev = Math.max(...c.revenue.map((r) => r.usdc), 0) || 1;
+  const [hoverBar, setHoverBar] = useState<number | null>(null);
   // Mock baskets always show 100% ownership; live reads from contract (null while loading).
   const ownershipLabel = live ? (ownership === null ? "…" : `${ownership.toFixed(0)}%`) : "100%";
 
@@ -120,15 +123,26 @@ export function CreatorBasketCard({ c }: { c: UiCreatorBasket }) {
           </div>
           {c.revenue.length > 0 ? (
             <>
-              <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 130 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-end",
+                  justifyContent: "flex-start",
+                  gap: 6,
+                  height: 130,
+                }}
+              >
                 {c.revenue.map((r, i) => {
                   const last = i === c.revenue.length - 1;
                   return (
                     <div
                       key={r.id}
-                      title={fmtUsd(r.usdc)}
+                      onMouseEnter={() => setHoverBar(i)}
+                      onMouseLeave={() => setHoverBar(null)}
+                      aria-label={`${fmtUsd(r.usdc)}, ${last ? "latest" : ago(r.t)}`}
                       style={{
-                        flex: 1,
+                        flex: "1 1 0",
+                        maxWidth: 48,
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
@@ -138,6 +152,7 @@ export function CreatorBasketCard({ c }: { c: UiCreatorBasket }) {
                     >
                       <div
                         style={{
+                          position: "relative",
                           width: "70%",
                           height: `${(r.usdc / maxRev) * 100}%`,
                           background: last ? "var(--accent)" : "var(--accent-tint-2)",
@@ -145,7 +160,35 @@ export function CreatorBasketCard({ c }: { c: UiCreatorBasket }) {
                           minHeight: 4,
                           transition: "height 0.3s cubic-bezier(0.22,0.7,0.25,1)",
                         }}
-                      />
+                      >
+                        {hoverBar === i && (
+                          <div
+                            role="tooltip"
+                            style={{
+                              position: "absolute",
+                              bottom: "calc(100% + 8px)",
+                              left: "50%",
+                              transform: "translateX(-50%)",
+                              background: "var(--ink)",
+                              color: "#fff",
+                              padding: "6px 9px",
+                              borderRadius: 8,
+                              fontSize: 11.5,
+                              lineHeight: 1.35,
+                              whiteSpace: "nowrap",
+                              textAlign: "center",
+                              boxShadow: "var(--shadow-md)",
+                              pointerEvents: "none",
+                              zIndex: 20,
+                            }}
+                          >
+                            <div className="num" style={{ fontWeight: 700 }}>
+                              {fmtUsd(r.usdc)}
+                            </div>
+                            <div style={{ opacity: 0.7 }}>{last ? "Latest" : ago(r.t)}</div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -159,7 +202,9 @@ export function CreatorBasketCard({ c }: { c: UiCreatorBasket }) {
                   fontSize: 11,
                 }}
               >
-                <span>{c.revenue.length} snapshots ago</span>
+                <span>
+                  {c.revenue.length === 1 ? "1 snapshot ago" : `${c.revenue.length} snapshots ago`}
+                </span>
                 <span>Latest</span>
               </div>
             </>
