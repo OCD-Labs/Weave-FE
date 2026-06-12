@@ -96,6 +96,14 @@ export function BasketDetail({ basket }: { basket: UiBasketDetail }) {
   const [hoverSlice, setHoverSlice] = useState<number | null>(null);
   const [actTab, setActTab] = useState<ActTab>("deposits");
 
+  if (!basket) return (
+    <div className="wrap-wide" style={{ paddingTop: 28, paddingBottom: 64 }}>
+      <div className="skel" style={{ height: 14, width: 160, marginBottom: 20 }}></div>
+      <div className="skel" style={{ height: 34, width: 320, marginBottom: 12 }}></div>
+      <div className="skel" style={{ height: 16, width: "60%", marginBottom: 28 }}></div>
+    </div>
+  );
+
   const up = basket.navChg24 >= 0;
 
   return (
