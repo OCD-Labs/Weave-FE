@@ -114,7 +114,7 @@ export function NavChart({ data, range = "all", height = 280 }: NavChartProps) {
           strokeLinejoin="round"
           strokeLinecap="round"
         />
-        {hover != null && (
+        {hover != null && hover < slice.length && (
           <g>
             <line
               x1={X(hover)}
@@ -129,7 +129,7 @@ export function NavChart({ data, range = "all", height = 280 }: NavChartProps) {
           </g>
         )}
       </svg>
-      {hover != null && (
+      {hover != null && hover < slice.length && (
         <div
           style={{
             position: "absolute",

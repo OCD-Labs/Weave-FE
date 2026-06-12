@@ -66,6 +66,7 @@ export function BasketDetailView({ slug }: { slug: string }) {
     queryFn: () => weaveApi.basket(slug),
     enabled: !isMock,
     refetchInterval: 30_000,
+    placeholderData: (prev) => prev,
   });
 
   if (isMock) {
@@ -89,7 +90,7 @@ export function BasketDetailView({ slug }: { slug: string }) {
       </div>
     );
   }
-  if (!data) return <NotFound />;
+  if (!data) return <DetailSkeleton />;
 
   return <BasketDetail basket={mapBasketDetail(data)} />;
 }

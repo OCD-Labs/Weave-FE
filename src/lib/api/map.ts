@@ -175,7 +175,7 @@ export function mapBasketDetail(b: ApiBasketDetail): UiBasketDetail {
     navChg30: pct(b.navChange30dPct),
     maxDriftBps: b.maxDriftBps,
     needsRebalance: b.needsRebalancing,
-    constituents: b.constituents.map((c) => ({
+    constituents: (b.constituents ?? []).map((c) => ({
       address: c.address,
       sym: c.symbol,
       name: c.name,
