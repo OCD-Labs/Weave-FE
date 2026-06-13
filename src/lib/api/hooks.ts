@@ -47,6 +47,10 @@ export function usePerformance(address: string) {
     queryKey: qk.performance(address),
     queryFn: () => weaveApi.performance(address),
     enabled: !!address,
+    // Each card fetches its own history; cache it so sparklines don't re-fetch
+    // (and re-stagger) when revisiting /markets, paginating, or re-rendering.
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
   });
 }
 

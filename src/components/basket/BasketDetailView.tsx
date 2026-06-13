@@ -45,11 +45,12 @@ function mockToDetail(b: Basket): UiBasketDetail {
     history: b.history,
     deposits: b.deposits.map((d) => ({
       investor: d.investor,
-      usdc: d.usdc,
+      usdg: d.usdg,
       tokens: d.tokens,
       t: d.t,
       txHash: "",
     })),
+    redemptions: [],
     rebalances: b.rebalances.map((r) => ({ tx: r.tx, by: r.by, t: r.t })),
   };
 }

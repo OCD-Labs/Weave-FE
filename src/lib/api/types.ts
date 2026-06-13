@@ -100,6 +100,13 @@ export interface ApiBasketDetail {
     timestamp: number;
     txHash: string;
   }[];
+  redemptionHistory: {
+    investor: string;
+    usdgReturned: string;
+    basketTokensBurned: string;
+    timestamp: number;
+    txHash: string;
+  }[];
 }
 
 /** Single wallet's position in one basket. */
@@ -150,6 +157,15 @@ export interface ApiCreatorSnapshot {
   claimableByWallet?: string;
 }
 
+/** A single on-chain RevenueClaimed event. */
+export interface ApiClaimEntry {
+  claimer: string;
+  snapshotId: number;
+  usdgAmount: string; // 6-decimal
+  timestamp: number;
+  txHash: string;
+}
+
 export interface ApiCreatorBasket {
   basketAddress: string;
   basketName: string;
@@ -159,6 +175,7 @@ export interface ApiCreatorBasket {
   totalClaimableUsdg: string;
   unclaimedSnapshots: ApiCreatorSnapshot[];
   revenueHistory: ApiCreatorSnapshot[];
+  claimHistory: ApiClaimEntry[];
 }
 
 export interface ApiCreatorDashboard {
