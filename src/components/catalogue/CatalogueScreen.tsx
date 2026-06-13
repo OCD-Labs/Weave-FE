@@ -49,12 +49,18 @@ export function CatalogueScreen() {
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <button
                 type="button"
-                className="btn btn-subtle btn-sm"
+                className="btn btn-subtle"
+                style={{ minWidth: 120 }}
                 onClick={() => setSelected([])}
               >
                 Clear
               </button>
-              <button type="button" className="btn btn-primary" onClick={startCreate}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                style={{ minWidth: 120 }}
+                onClick={startCreate}
+              >
                 Create basket →
               </button>
             </div>
