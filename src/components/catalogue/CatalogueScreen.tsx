@@ -41,21 +41,23 @@ export function CatalogueScreen() {
       />
 
       {selected.length > 0 && (
-        <div className="float-bar" role="region" aria-label="Create basket from selection">
-          <span style={{ fontSize: 14, fontWeight: 600 }}>
-            {selected.length} {selected.length === 1 ? "asset" : "assets"} selected
-          </span>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button
-              type="button"
-              className="btn btn-subtle btn-sm"
-              onClick={() => setSelected([])}
-            >
-              Clear
-            </button>
-            <button type="button" className="btn btn-primary" onClick={startCreate}>
-              Create basket →
-            </button>
+        <div className="float-bar-dock">
+          <div className="float-bar" role="region" aria-label="Create basket from selection">
+            <span style={{ fontSize: 14, fontWeight: 600 }}>
+              {selected.length} {selected.length === 1 ? "asset" : "assets"} selected
+            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button
+                type="button"
+                className="btn btn-subtle btn-sm"
+                onClick={() => setSelected([])}
+              >
+                Clear
+              </button>
+              <button type="button" className="btn btn-primary" onClick={startCreate}>
+                Create basket →
+              </button>
+            </div>
           </div>
         </div>
       )}

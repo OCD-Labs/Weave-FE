@@ -7,7 +7,7 @@ interface SparkProps {
   up?: boolean;
 }
 
-/** Tiny NAV sparkline (hand-rolled SVG; swap for recharts later if desired). */
+/** Tiny NAV sparkline (hand-rolled SVG; may swap for recharts later). */
 export function Spark({ data, w = 92, h = 30, up = true }: SparkProps) {
   if (!data.length) return null;
   const vals = data.map((d) => d.nav);
