@@ -669,27 +669,27 @@
   /* Docks the selection pill just under the table. Sticky (not fixed) so on
      tall screens it sits at the bottom of the content, and only pins to the
      viewport bottom while a long list is being scrolled. */
-  .float-bar-dock {
-    position: sticky;
-    bottom: 24px;
-    z-index: 90;
-    display: flex;
-    justify-content: center;
-    margin-top: 24px;
-    pointer-events: none;
-  }
-  .float-bar {
-    pointer-events: auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 16px;
-    padding: 10px 12px 10px 20px;
-    background: var(--ink);
-    color: #fff;
-    border-radius: 999px;
-    box-shadow: var(--shadow-lg);
-    animation: reveal 0.35s cubic-bezier(0.22, 0.7, 0.25, 1) both;
-  }
+     .float-bar-dock {
+       position: sticky;
+       bottom: 24px;
+       z-index: 90;
+       display: flex;
+       justify-content: flex-end;
+       margin-top: 24px;
+       pointer-events: none;
+     }
+     .float-bar {
+       pointer-events: auto;
+       display: inline-flex;
+       align-items: center;
+       gap: 12px;
+       padding: 10px 16px;
+       background: var(--card);
+       border: 1px solid var(--line);
+       border-radius: var(--r);
+       box-shadow: var(--shadow-lg);
+       animation: reveal 0.35s cubic-bezier(0.22, 0.7, 0.25, 1) both;
+     }
   @media (max-width: 560px) {
     .float-bar {
       width: 100%;
