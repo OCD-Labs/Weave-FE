@@ -316,6 +316,17 @@ export function mapPortfolio(p: ApiPortfolio): UiPortfolio {
 
 /* ---- Creator dashboard ---- */
 
+/** A single revenue claim event, display-ready. */
+export interface UiClaimEntry {
+  claimer: string;
+  snapshotId: number;
+  /** Claimed amount in USD (display number). */
+  usdc: number;
+  /** Unix timestamp (ms). */
+  t: number;
+  txHash: string;
+}
+
 export interface UiCreatorBasket {
   basketAddress: string;
   slug: string;
@@ -328,6 +339,8 @@ export interface UiCreatorBasket {
   totalEarned: number;
   /** Revenue per snapshot, oldest→newest, in USD. */
   revenue: { id: number; usdg: number; t: number }[];
+  /** On-chain claim events for this basket's creator token. */
+  claimHistory: UiClaimEntry[];
 }
 
 export interface UiCreatorDashboard {
@@ -345,6 +358,13 @@ export function mapCreatorDashboard(c: ApiCreatorDashboard): UiCreatorDashboard 
       t: s.timestamp * 1000,
     }));
     const totalEarned = revenue.reduce((sum, r) => sum + r.usdg, 0);
+    const claimHistory = (b.claimHistory ?? []).map((cl) => ({
+      claimer: cl.claimer,
+      snapshotId: cl.snapshotId,
+      usdc: usdgToNumber(cl.usdgAmount),
+      t: cl.timestamp * 1000,
+      txHash: cl.txHash,
+    }));
     return {
       basketAddress: b.basketAddress,
       slug: b.basketAddress.toLowerCase(),
@@ -355,6 +375,7 @@ export function mapCreatorDashboard(c: ApiCreatorDashboard): UiCreatorDashboard 
       claimable: usdgToNumber(b.totalClaimableUsdg),
       totalEarned,
       revenue,
+      claimHistory,
     };
   });
   return {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useCreator } from "@/lib/api/hooks";
 import { mapCreatorDashboard, type UiCreatorDashboard } from "@/lib/api/map";
@@ -23,6 +23,7 @@ function mockDashboard(): UiCreatorDashboard {
     claimable: c.claimable,
     totalEarned: c.totalEarned,
     revenue: c.revenue.map((r) => ({ id: r.id, usdg: r.usdg, t: r.t })),
+    claimHistory: [],
   }));
   return {
     totalClaimable: baskets.reduce((s, b) => s + b.claimable, 0),
@@ -36,6 +37,7 @@ export function Creator() {
   const { connected, fullAddress } = useWallet();
   const dataSource = useDataSource();
   const isMock = dataSource === "mock";
+  const [openAddress, setOpenAddress] = useState<string | null>(null);
 
   const { data, isLoading, isError, error, refetch } = useCreator(
     isMock ? undefined : fullAddress
@@ -111,7 +113,16 @@ export function Creator() {
 
           <div className="grid gap-[var(--gap)]">
             {dash.baskets.map((c) => (
-              <CreatorBasketCard key={c.basketAddress} c={c} />
+              <CreatorBasketCard
+                key={c.basketAddress}
+                c={c}
+                open={openAddress === c.basketAddress}
+                onToggle={() =>
+                  setOpenAddress((prev) =>
+                    prev === c.basketAddress ? null : c.basketAddress
+                  )
+                }
+              />
             ))}
           </div>
         </>
