@@ -100,6 +100,13 @@ export interface ApiBasketDetail {
     timestamp: number;
     txHash: string;
   }[];
+  redemptionHistory: {
+    investor: string;
+    usdgReturned: string;
+    basketTokensBurned: string;
+    timestamp: number;
+    txHash: string;
+  }[];
 }
 
 /** Single wallet's position in one basket. */

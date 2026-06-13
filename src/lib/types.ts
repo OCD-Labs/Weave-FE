@@ -33,7 +33,7 @@ export interface NavPoint {
 
 export interface Deposit {
   investor: string;
-  usdc: number;
+  usdg: number;
   tokens: number;
   t: number;
 }
@@ -86,7 +86,7 @@ export interface Position {
 
 export interface RevenueSnapshot {
   id: number;
-  usdc: number;
+  usdg: number;
   t: number;
 }
 

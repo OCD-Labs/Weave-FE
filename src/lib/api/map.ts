@@ -147,7 +147,14 @@ export interface UiBasketDetail {
   history: UiNavPoint[];
   deposits: {
     investor: string;
-    usdc: number;
+    usdg: number;
+    tokens: number;
+    t: number;
+    txHash: string;
+  }[];
+  redemptions: {
+    investor: string;
+    usdg: number;
     tokens: number;
     t: number;
     txHash: string;
@@ -192,10 +199,17 @@ export function mapBasketDetail(b: ApiBasketDetail): UiBasketDetail {
     })),
     deposits: b.depositHistory.map((d) => ({
       investor: d.investor,
-      usdc: usdgToNumber(d.usdgAmount),
+      usdg: usdgToNumber(d.usdgAmount),
       tokens: fromUnits(d.basketTokensMinted, 18),
       t: d.timestamp * 1000,
       txHash: d.txHash,
+    })),
+    redemptions: (b.redemptionHistory ?? []).map((r) => ({
+      investor: r.investor,
+      usdg: usdgToNumber(r.usdgReturned),
+      tokens: fromUnits(r.basketTokensBurned, 18),
+      t: r.timestamp * 1000,
+      txHash: r.txHash,
     })),
     rebalances: b.rebalanceHistory.map((r) => ({
       tx: r.txHash,
@@ -313,7 +327,7 @@ export interface UiCreatorBasket {
   /** Total revenue earned to date (sum of revenue history). */
   totalEarned: number;
   /** Revenue per snapshot, oldest→newest, in USD. */
-  revenue: { id: number; usdc: number; t: number }[];
+  revenue: { id: number; usdg: number; t: number }[];
 }
 
 export interface UiCreatorDashboard {
@@ -327,10 +341,10 @@ export function mapCreatorDashboard(c: ApiCreatorDashboard): UiCreatorDashboard 
   const baskets: UiCreatorBasket[] = c.baskets.map((b) => {
     const revenue = (b.revenueHistory ?? []).map((s) => ({
       id: s.snapshotId,
-      usdc: usdgToNumber(s.usdgAmount),
+      usdg: usdgToNumber(s.usdgAmount),
       t: s.timestamp * 1000,
     }));
-    const totalEarned = revenue.reduce((sum, r) => sum + r.usdc, 0);
+    const totalEarned = revenue.reduce((sum, r) => sum + r.usdg, 0);
     return {
       basketAddress: b.basketAddress,
       slug: b.basketAddress.toLowerCase(),

@@ -22,7 +22,7 @@ function mockDashboard(): UiCreatorDashboard {
     aum: c.basket.aum,
     claimable: c.claimable,
     totalEarned: c.totalEarned,
-    revenue: c.revenue.map((r) => ({ id: r.id, usdc: r.usdc, t: r.t })),
+    revenue: c.revenue.map((r) => ({ id: r.id, usdg: r.usdg, t: r.t })),
   }));
   return {
     totalClaimable: baskets.reduce((s, b) => s + b.claimable, 0),

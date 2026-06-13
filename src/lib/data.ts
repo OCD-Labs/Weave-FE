@@ -241,10 +241,10 @@ export const BASKETS: Basket[] = RAW_BASKETS.map((b) => ({
   slug: b.symbol.toLowerCase(),
   constituents: resolveConstituents(b.weights),
   deposits: [
-    { investor: "0x4D9c…71Aa", usdc: 250000, tokens: 180890, t: NOW - 2 * HOUR },
-    { investor: "0xA1b2…77Cd", usdc: 50000, tokens: 36178, t: NOW - 9 * HOUR },
-    { investor: "0x91Fe…2C0b", usdc: 120000, tokens: 86827, t: NOW - 26 * HOUR },
-    { investor: "0x33Aa…0bE1", usdc: 8000, tokens: 5788, t: NOW - 50 * HOUR },
+    { investor: "0x4D9c…71Aa", usdg: 250000, tokens: 180890, t: NOW - 2 * HOUR },
+    { investor: "0xA1b2…77Cd", usdg: 50000, tokens: 36178, t: NOW - 9 * HOUR },
+    { investor: "0x91Fe…2C0b", usdg: 120000, tokens: 86827, t: NOW - 26 * HOUR },
+    { investor: "0x33Aa…0bE1", usdg: 8000, tokens: 5788, t: NOW - 50 * HOUR },
   ],
   rebalances: b.rebalancing
     ? [
@@ -308,7 +308,7 @@ export const CREATED: CreatedBasket[] = BASKETS.filter(
     claimable,
     revenue: [4, 3, 5, 6, 5, 7, 8, 9, 11, 10, 13, 14].map((v, i) => ({
       id: i + 1,
-      usdc: v * (b.aum / 4_820_000) * 90,
+      usdg: v * (b.aum / 4_820_000) * 90,
       t: NOW - (12 - i) * 7 * DAY,
     })),
   };

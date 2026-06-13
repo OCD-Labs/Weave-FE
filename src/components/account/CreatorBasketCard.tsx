@@ -23,7 +23,7 @@ export function CreatorBasketCard({ c }: { c: UiCreatorBasket }) {
 
   // Scale against the largest actual snapshot (not a $1 floor) so sub-dollar
   // testnet revenues still render as proportional bars instead of flat minimums.
-  const maxRev = Math.max(...c.revenue.map((r) => r.usdc), 0) || 1;
+  const maxRev = Math.max(...c.revenue.map((r) => r.usdg), 0) || 1;
   const [hoverBar, setHoverBar] = useState<number | null>(null);
   // Mock baskets always show 100% ownership; live reads from contract (null while loading).
   const ownershipLabel = live ? (ownership === null ? "…" : `${ownership.toFixed(0)}%`) : "100%";
@@ -139,7 +139,7 @@ export function CreatorBasketCard({ c }: { c: UiCreatorBasket }) {
                       key={r.id}
                       onMouseEnter={() => setHoverBar(i)}
                       onMouseLeave={() => setHoverBar(null)}
-                      aria-label={`${fmtUsd(r.usdc)}, ${last ? "latest" : ago(r.t)}`}
+                      aria-label={`${fmtUsd(r.usdg)}, ${last ? "latest" : ago(r.t)}`}
                       style={{
                         flex: "1 1 0",
                         maxWidth: 48,
@@ -154,7 +154,7 @@ export function CreatorBasketCard({ c }: { c: UiCreatorBasket }) {
                         style={{
                           position: "relative",
                           width: "70%",
-                          height: `${(r.usdc / maxRev) * 100}%`,
+                          height: `${(r.usdg / maxRev) * 100}%`,
                           background: last ? "var(--accent)" : "var(--accent-tint-2)",
                           borderRadius: "4px 4px 0 0",
                           minHeight: 4,
@@ -183,7 +183,7 @@ export function CreatorBasketCard({ c }: { c: UiCreatorBasket }) {
                             }}
                           >
                             <div className="num" style={{ fontWeight: 700 }}>
-                              {fmtUsd(r.usdc)}
+                              {fmtUsd(r.usdg)}
                             </div>
                             <div style={{ opacity: 0.7 }}>{last ? "Latest" : ago(r.t)}</div>
                           </div>
