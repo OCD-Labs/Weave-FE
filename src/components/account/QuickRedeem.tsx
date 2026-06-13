@@ -15,7 +15,7 @@ export function QuickRedeem({ p, onClose }: { p: UiPosition; onClose: () => void
   const { toast } = useToast();
   const [amt, setAmt] = useState(String(p.tokens.toFixed(2)));
   const num = parseFloat(amt) || 0;
-  const usdc = num * p.nav * (1 - FEE);
+  const usdg = num * p.nav * (1 - FEE);
 
   const live = isRealAddress(p.basketAddress);
   const { state, redeem, reset } = useTrade(
@@ -98,7 +98,7 @@ export function QuickRedeem({ p, onClose }: { p: UiPosition; onClose: () => void
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontWeight: 700 }}>You receive</span>
           <span className="num" style={{ fontSize: 20, fontWeight: 800 }}>
-            {fmtUsd(usdc)}
+            {fmtUsd(usdg)}
           </span>
         </div>
       </div>

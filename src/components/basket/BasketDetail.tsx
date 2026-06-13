@@ -14,7 +14,7 @@ import { DriftIndicator } from "./DriftIndicator";
 import { TradePanel } from "./TradePanel";
 
 type Range = "24h" | "7d" | "30d" | "all";
-type ActTab = "deposits" | "rebalances";
+type ActTab = "deposits" | "redemptions" | "rebalances";
 
 const RANGES: [Range, string][] = [
   ["24h", "24H"],
@@ -403,6 +403,7 @@ export function BasketDetail({ basket }: { basket: UiBasketDetail }) {
               {(
                 [
                   ["deposits", "Deposits"],
+                  ["redemptions", "Redemptions"],
                   ["rebalances", "Rebalances"],
                 ] as [ActTab, string][]
               ).map(([k, l]) => (
@@ -437,13 +438,13 @@ export function BasketDetail({ basket }: { basket: UiBasketDetail }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {basket.deposits.map((d, i) => (
+                    {basket.deposits.length ? basket.deposits.map((d, i) => (
                       <tr key={i}>
                         <td className="mono" style={{ fontSize: 13 }}>
                           {shortLabel(d.investor)}
                         </td>
                         <td className="num" style={{ textAlign: "right" }}>
-                          {fmtUsd(d.usdc)}
+                          {fmtUsd(d.usdg)}
                         </td>
                         <td className="num" style={{ textAlign: "right" }}>
                           {fmtNum(d.tokens, 2)}
@@ -470,7 +471,69 @@ export function BasketDetail({ basket }: { basket: UiBasketDetail }) {
                           )}
                         </td>
                       </tr>
-                    ))}
+                    )) : (
+                      <tr>
+                        <td colSpan={5}>
+                          <div className="muted" style={{ padding: 24, textAlign: "center", fontSize: 14 }}>
+                            No deposits yet.
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              ) : actTab === "redemptions" ? (
+                <table className="tbl tbl-hover">
+                  <thead>
+                    <tr>
+                      <th>Investor</th>
+                      <th style={{ textAlign: "right" }}>USDG returned</th>
+                      <th style={{ textAlign: "right" }}>Tokens burned</th>
+                      <th style={{ textAlign: "right" }}>When</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {basket.redemptions.length ? basket.redemptions.map((r, i) => (
+                      <tr key={i}>
+                        <td className="mono" style={{ fontSize: 13 }}>
+                          {shortLabel(r.investor)}
+                        </td>
+                        <td className="num" style={{ textAlign: "right" }}>
+                          {fmtUsd(r.usdg)}
+                        </td>
+                        <td className="num" style={{ textAlign: "right" }}>
+                          {fmtNum(r.tokens, 2)}
+                        </td>
+                        <td className="muted" style={{ textAlign: "right", fontSize: 13 }}>
+                          {ago(r.t)}
+                        </td>
+                        <td style={{ textAlign: "right" }}>
+                          {r.txHash ? (
+                            <a
+                              href={explorerTx(r.txHash)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="muted"
+                              title="View on explorer"
+                              style={{ textDecoration: "none" }}
+                            >
+                              ↗
+                            </a>
+                          ) : (
+                            <span className="muted" style={{ opacity: 0.4 }}>↗</span>
+                          )}
+                        </td>
+                      </tr>
+                    )) : (
+                      <tr>
+                        <td colSpan={5}>
+                          <div className="muted" style={{ padding: 24, textAlign: "center", fontSize: 14 }}>
+                            No redemptions yet.
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               ) : basket.rebalances.length ? (
